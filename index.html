@@ -381,7 +381,7 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
         </div>
       </div>
       <div class="form-group">
-        <label>Order Start / Entry Date</label>
+        <label>Order Entry Date</label>
         <input class="form-control" id="ef-entry-date" type="date" oninput="previewChanges()">
         <div style="font-size:11px;color:rgba(44,31,20,0.4);margin-top:4px">Leave blank to keep existing.</div>
       </div>
@@ -557,6 +557,34 @@ function getPrevStage(currentStage,print){
 
 function todayISO(){return new Date().toISOString().split('T')[0]}
 function nowLabel(){const n=new Date();return n.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+', '+n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});}
+
+// FIX: handle Google Sheets returning Date objects or ISO strings
+function cleanSheetValue(val){
+  if(!val&&val!==0)return'';
+  // If it's a Date object or ISO timestamp string from Sheets
+  if(val instanceof Date)return val.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  const s=String(val);
+  // Detect ISO datetime string e.g. "2026-04-21T08:42:48.000Z"
+  if(/^\d{4}-\d{2}-\d{2}T/.test(s)){
+    const d=new Date(s);
+    if(!isNaN(d.getTime())){
+      // If it looks like a time-only value (year 1899 = Excel epoch time)
+      if(d.getFullYear()<1900)return'';
+      return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    }
+  }
+  return s;
+}
+
+// FIX: clean date-only ISO "2026-04-21" → keep as-is for date inputs
+function cleanDateForInput(val){
+  if(!val)return'';
+  const s=String(val);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  if(/^\d{4}-\d{2}-\d{2}T/.test(s))return s.split('T')[0];
+  return'';
+}
+
 function fmtDate(iso){if(!iso||!iso.match(/^\d{4}-\d{2}-\d{2}$/))return iso||'TBD';const[,m,d]=iso.split('-');const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return`${parseInt(d)}-${mo[parseInt(m)-1]}`;}
 function fmtDateFull(iso){if(!iso)return'—';return new Date(iso+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
 function isValidISO(d){return d&&/^\d{4}-\d{2}-\d{2}$/.test(d);}
@@ -607,8 +635,8 @@ async function initApp(){
       client:String(row['Client']||''),
       product:String(row['Product']||''),
       qty:Number(row['Qty'])||0,
-      date:String(row['Delivery Date']||''),
-      time:String(row['Time']||'—'),
+      date:cleanDateForInput(row['Delivery Date']),
+      time:cleanSheetValue(row['Time'])||'—',
       stage:String(row['Stage']||'Cutting'),
       status:String(row['Status']||'ok'),
       print:String(row['Print']||'none'),
@@ -616,8 +644,8 @@ async function initApp(){
       workers:Array.isArray(row['Workers'])?row['Workers']:(row['Workers']?String(row['Workers']).split('|').map(w=>w.trim()).filter(Boolean):[]),
       remarks:String(row['Remarks']||''),
       edited:row['Edited']===true||row['Edited']==='TRUE',
-      entryDate:String(row['Created At']||''),
-      cuttingDate:String(row['Cutting Date']||''),
+      entryDate:cleanSheetValue(row['Created At'])||'',
+      cuttingDate:cleanSheetValue(row['Cutting Date'])||'',
       timeline:[]
     })).filter(o=>o.client&&o.client.trim()!=='');
     if(data.timeline&&data.timeline.length){
@@ -843,8 +871,8 @@ function openDetail(id,e){
   document.getElementById('m-qty').textContent=`${o.qty||'—'} pcs`;
   document.getElementById('m-entry-date').textContent=o.entryDate||'—';
   document.getElementById('m-cutting-date').textContent=o.cuttingDate||'Not started yet';
-  document.getElementById('m-date').textContent=fmtDate(o.date);
-  document.getElementById('m-time').textContent=o.time||'—';
+  document.getElementById('m-date').textContent=isValidISO(o.date)?fmtDate(o.date):(o.date||'TBD');
+  document.getElementById('m-time').textContent=(o.time&&!/T\d{2}:\d{2}/.test(o.time)&&o.time!=='—')?o.time:'—';
   document.getElementById('m-print').textContent=o.print==='screen'?'🖨 Screen Print':o.print==='dtf'?'🎨 DTF':'None';
   document.getElementById('m-stage').textContent=o.stage;
   document.getElementById('m-status').textContent=o.status.toUpperCase();
@@ -888,8 +916,11 @@ function openEditModal(){
   document.getElementById('ef-client').value=o.client;
   document.getElementById('ef-product').value=o.product;
   document.getElementById('ef-qty').value=o.qty||'';
-  document.getElementById('ef-date').value=isValidISO(o.date)?o.date:'';
-  document.getElementById('ef-notes').value=(o.time&&o.time!=='—')?o.time:'';
+  // FIX: cleanDateForInput handles ISO timestamps from Sheets
+  document.getElementById('ef-date').value=cleanDateForInput(o.date)||'';
+  // FIX: time field — strip timestamp artifacts, only show plain text
+  const cleanTime=(o.time&&o.time!=='—'&&!/T\d{2}:\d{2}/.test(o.time))?o.time:'';
+  document.getElementById('ef-notes').value=cleanTime;
   document.getElementById('ef-priority').value=o.status;
   document.getElementById('ef-reason').value='';
   document.getElementById('edit-change-log').classList.remove('visible');
