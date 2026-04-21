@@ -16,8 +16,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--bark);min-height:100vh;overflow-x:hidden}
 
-/* SYNC STATUS BAR */
-.sync-bar{background:var(--bark);color:rgba(255,255,255,0.7);padding:3px 24px;font-size:11px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:8px;height:24px}
+.sync-bar{background:var(--bark);color:rgba(255,255,255,0.7);padding:3px 24px;font-size:11px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:8px;height:24px;position:sticky;top:0;z-index:101}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:#9CA3AF;flex-shrink:0;transition:background .3s}
 .sync-dot.syncing{background:#F59E0B;animation:pulse .8s infinite}
 .sync-dot.ok{background:#22C55E}
@@ -73,7 +72,6 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 .view-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:14px;transition:all .15s}
 .view-btn.active{background:var(--bark);color:#fff;border-color:var(--bark)}
 
-/* LOADING OVERLAY */
 #loading-overlay{position:fixed;inset:0;background:rgba(44,31,20,0.75);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
 #loading-overlay.hidden{display:none}
 .loading-spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
@@ -197,6 +195,7 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 .person-tag{font-size:12px;font-weight:600;padding:3px 9px;border-radius:20px}
 .person-tag.sale{background:#FEF3C7;color:#92400E}
 .person-tag.worker{background:#EEF2FF;color:#1E40AF}
+
 .btn-advance{width:100%;background:var(--moss);color:#fff;border:none;border-radius:10px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-advance:hover{background:var(--moss-light)}
 .btn-advance:disabled{background:#9CA3AF;cursor:not-allowed}
@@ -255,19 +254,17 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 .ptag:hover .ptag-x{opacity:1}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bark);color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:500;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-@media(max-width:600px){header{padding:0 12px;top:24px}.summary,#kanban-view,#list-view,.controls{padding-left:12px;padding-right:12px}#day-panel{margin-left:12px;margin-right:12px}}
+@media(max-width:600px){.sync-bar{padding:3px 12px}header{padding:0 12px;top:24px}.summary,#kanban-view,#list-view,.controls{padding-left:12px;padding-right:12px}#day-panel{margin-left:12px;margin-right:12px}}
 </style>
 </head>
 <body>
 
-<!-- LOADING OVERLAY -->
 <div id="loading-overlay">
   <div class="loading-spinner"></div>
   <div class="loading-text">Loading from Google Sheets…</div>
   <div class="loading-sub">karmatotes@gmail.com</div>
 </div>
 
-<!-- SYNC STATUS BAR -->
 <div class="sync-bar">
   <div class="sync-dot" id="sync-dot"></div>
   <span class="sync-text" id="sync-text">Connecting to Google Sheets…</span>
@@ -453,7 +450,7 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 <div class="modal-overlay" id="confirm-modal">
   <div class="confirm-modal">
     <div class="confirm-header del" style="display:flex;align-items:flex-start;justify-content:space-between">
-      <div><div class="modal-title">🗑 Remove Order?</div><div class="modal-sub" id="confirm-sub">Use Undo to restore.</div></div>
+      <div><div class="modal-title">🗑 Remove Order?</div><div class="modal-sub" id="confirm-sub">Deletion will be logged in Timeline.</div></div>
       <button class="modal-close" onclick="closeModal('confirm-modal')">✕</button>
     </div>
     <div class="confirm-body">
@@ -529,38 +526,24 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIG ─────────────────────────────────────────────────────
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbxpcfocezAqlwg37_SujPuDilIyXEeve5A8Niir1vohU3pz2sytBrSIjQyX6vLmoIPN/exec";
-
-// ── CONSTANTS ──────────────────────────────────────────────────
+const SHEET_URL="https://script.google.com/macros/s/AKfycbxpcfocezAqlwg37_SujPuDilIyXEeve5A8Niir1vohU3pz2sytBrSIjQyX6vLmoIPN/exec";
 const STAGES=["Cutting","Printing","Stitching","Finishing","Packing & Del","Done"];
-const STAGE_COLORS={
-  "Cutting":{bg:"#FEF3C7",text:"#92400E",dot:"#F59E0B"},
-  "Printing":{bg:"#DBEAFE",text:"#1E40AF",dot:"#3B82F6"},
-  "Stitching":{bg:"#FDE8D8",text:"#9A3412",dot:"#EA580C"},
-  "Finishing":{bg:"#FAE8FF",text:"#6B21A8",dot:"#A855F7"},
-  "Packing & Del":{bg:"#DCFCE7",text:"#166534",dot:"#22C55E"},
-  "Done":{bg:"#F3F4F6",text:"#374151",dot:"#9CA3AF"}
-};
+const STAGE_COLORS={"Cutting":{bg:"#FEF3C7",text:"#92400E",dot:"#F59E0B"},"Printing":{bg:"#DBEAFE",text:"#1E40AF",dot:"#3B82F6"},"Stitching":{bg:"#FDE8D8",text:"#9A3412",dot:"#EA580C"},"Finishing":{bg:"#FAE8FF",text:"#6B21A8",dot:"#A855F7"},"Packing & Del":{bg:"#DCFCE7",text:"#166534",dot:"#22C55E"},"Done":{bg:"#F3F4F6",text:"#374151",dot:"#9CA3AF"}};
 const STATUS_DOT={delayed:"#C0392B",urgent:"#D4A96A",ok:"#3B6B45"};
 const COL_CLASS={"Cutting":"col-cutting","Printing":"col-printing","Stitching":"col-stitching","Finishing":"col-finishing","Packing & Del":"col-packing","Done":"col-done"};
 
-// ── STATE ──────────────────────────────────────────────────────
-let orders=[], nextId=1, activeFilter='all', searchTerm='', currentOrderId=null;
-let selectedPrint='none', selectedSaleBy='', customDateFilter='', formWorkers=[];
-let editPrint='none', editSaleBy='', editWorkers=[];
-let undoStack=[], redoStack=[], pendingBackId=null;
-let syncInProgress=false;
+let orders=[],nextId=1,activeFilter='all',searchTerm='',currentOrderId=null;
+let selectedPrint='none',selectedSaleBy='',customDateFilter='',formWorkers=[];
+let editPrint='none',editSaleBy='',editWorkers=[];
+let undoStack=[],redoStack=[],pendingBackId=null;
 
-// ── HELPERS ────────────────────────────────────────────────────
 function todayISO(){return new Date().toISOString().split('T')[0]}
 function nowLabel(){const n=new Date();return n.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+', '+n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});}
 function fmtDate(iso){if(!iso||!iso.match(/^\d{4}-\d{2}-\d{2}$/))return iso||'TBD';const[,m,d]=iso.split('-');const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return`${parseInt(d)}-${mo[parseInt(m)-1]}`;}
 function fmtDateFull(iso){if(!iso)return'—';return new Date(iso+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
 function isValidISO(d){return d&&/^\d{4}-\d{2}-\d{2}$/.test(d);}
 
-// ── SYNC STATUS UI ─────────────────────────────────────────────
-function setSyncStatus(state, msg){
+function setSyncStatus(state,msg){
   const dot=document.getElementById('sync-dot');
   const txt=document.getElementById('sync-text');
   const time=document.getElementById('sync-time');
@@ -570,18 +553,16 @@ function setSyncStatus(state, msg){
   else time.textContent='';
 }
 
-// ── SHEET API ──────────────────────────────────────────────────
 async function sheetCall(params){
   setSyncStatus('syncing','Syncing with Google Sheets…');
   try{
-    const qs=new URLSearchParams(params).toString();
-    const res=await fetch(`${SHEET_URL}?${qs}`);
+    const res=await fetch(`${SHEET_URL}?${new URLSearchParams(params).toString()}`);
     const data=await res.json();
     if(data.error)throw new Error(data.error);
-    setSyncStatus('ok','Synced with Google Sheets · karmatotes@gmail.com');
+    setSyncStatus('ok','Synced · karmatotes@gmail.com');
     return data;
   }catch(err){
-    setSyncStatus('err','Sync failed — working offline. Changes will retry.');
+    setSyncStatus('err','Sync failed — working offline.');
     console.error('Sheet sync error:',err);
     return null;
   }
@@ -596,97 +577,64 @@ async function sheetPost(body){
     setSyncStatus('ok','Saved · karmatotes@gmail.com');
     return data;
   }catch(err){
-    setSyncStatus('err','Save failed — data safe locally. Will retry on next action.');
+    setSyncStatus('err','Save failed — data safe locally.');
     console.error('Sheet save error:',err);
     return null;
   }
 }
 
-// ── LOAD FROM SHEET ON STARTUP ─────────────────────────────────
 async function initApp(){
-  // Step 1: init sheets structure
   await sheetCall({action:'initSheets'});
-
-  // Step 2: load all orders
   const data=await sheetCall({action:'getAll'});
   document.getElementById('loading-overlay').classList.add('hidden');
-
-  if(data && data.orders && data.orders.length>0){
-    // Map sheet rows back to app format
+  if(data&&data.orders&&data.orders.length>0){
     orders=data.orders.map(row=>({
-      id:       Number(row['ID']),
-      client:   row['Client']||'',
-      product:  row['Product']||'',
-      qty:      Number(row['Qty'])||0,
-      date:     row['Delivery Date']||'',
-      time:     row['Time']||'—',
-      stage:    row['Stage']||'Cutting',
-      status:   row['Status']||'ok',
-      print:    row['Print']||'none',
-      saleBy:   row['Sale By']||'',
-      workers:  Array.isArray(row['Workers'])?row['Workers']:(row['Workers']?String(row['Workers']).split('|').map(w=>w.trim()).filter(Boolean):[]),
-      remarks:  row['Remarks']||'',
-      edited:   row['Edited']===true||row['Edited']==='TRUE',
-      timeline: [] // timeline loaded separately below
+      id:Number(row['ID']),client:row['Client']||'',product:row['Product']||'',
+      qty:Number(row['Qty'])||0,date:row['Delivery Date']||'',time:row['Time']||'—',
+      stage:row['Stage']||'Cutting',status:row['Status']||'ok',print:row['Print']||'none',
+      saleBy:row['Sale By']||'',
+      workers:Array.isArray(row['Workers'])?row['Workers']:(row['Workers']?String(row['Workers']).split('|').map(w=>w.trim()).filter(Boolean):[]),
+      remarks:row['Remarks']||'',edited:row['Edited']===true||row['Edited']==='TRUE',timeline:[]
     }));
-
-    // Attach timeline entries to each order
     if(data.timeline&&data.timeline.length){
       data.timeline.forEach(t=>{
         const o=orders.find(x=>String(x.id)===String(t['Order ID']));
-        if(o){
-          o.timeline.push({
-            type:  t['Type']||'stage',
-            stage: t['Stage']||'',
-            date:  t['Timestamp']||'',
-            back:  t['Moved Back?']===true||t['Moved Back?']==='TRUE',
-            note:  t['Reason / Note']||'',
-            changes: t['Changes']||[]
-          });
-        }
+        if(o)o.timeline.push({type:t['Type']||'stage',stage:t['Stage']||'',date:t['Timestamp']||'',back:t['Moved Back?']===true||t['Moved Back?']==='TRUE',note:t['Reason / Note']||'',changes:t['Changes']||[]});
       });
     }
-
     nextId=Math.max(...orders.map(o=>o.id),0)+1;
     showToast(`✅ Loaded ${orders.length} orders from Google Sheets`);
-  } else {
-    // First time — sheet is empty, seed with current orders
-    showToast('📋 Sheet is empty — add your first order to get started');
+  }else{
+    showToast('📋 Sheet is empty — add your first order');
   }
-
   render();
 }
 
-// ── UNDO / REDO ────────────────────────────────────────────────
 function snapshot(){return JSON.parse(JSON.stringify(orders));}
 function pushUndo(prev){undoStack.push(prev);if(undoStack.length>30)undoStack.shift();redoStack=[];syncUR();}
-function doUndo(){if(!undoStack.length)return;redoStack.push(snapshot());orders=undoStack.pop();syncUR();render();renderDayPanel();showToast('↩ Undone — note: Sheet not reverted (use manually if needed)');}
+function doUndo(){if(!undoStack.length)return;redoStack.push(snapshot());orders=undoStack.pop();syncUR();render();renderDayPanel();showToast('↩ Undone locally');}
 function doRedo(){if(!redoStack.length)return;undoStack.push(snapshot());orders=redoStack.pop();syncUR();render();renderDayPanel();showToast('↪ Redone');}
 function syncUR(){document.getElementById('btn-undo').disabled=!undoStack.length;document.getElementById('btn-redo').disabled=!redoStack.length;}
 
 document.getElementById('live-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 
-// ── PRINT / SALE / WORKERS (ADD) ──────────────────────────────
 function selectPrint(v){selectedPrint=v;document.querySelectorAll('#add-modal .print-type-btn').forEach(b=>b.classList.remove('active-screen','active-dtf','active-none'));document.getElementById(v==='screen'?'pt-screen':v==='dtf'?'pt-dtf':'pt-none').classList.add(v==='screen'?'active-screen':v==='dtf'?'active-dtf':'active-none');}
 function selectSaleBy(v){selectedSaleBy=v;document.querySelectorAll('#add-modal .sale-by-btn').forEach(b=>b.classList.remove('active'));const m={"Sridevi":"sb-sridevi","Anu Prasad":"sb-anuprasad","Esha":"sb-esha","Other":"sb-other"};if(m[v])document.getElementById(m[v]).classList.add('active');document.getElementById('f-sale-other').style.display=v==='Other'?'block':'none';}
 function addWorker(){const inp=document.getElementById('pi-worker');const v=inp.value.trim();if(!v||formWorkers.includes(v))return;formWorkers.push(v);inp.value='';renderFormWorkers();}
 function removeWorker(n){formWorkers=formWorkers.filter(x=>x!==n);renderFormWorkers();}
 function renderFormWorkers(){document.getElementById('pt-workers').innerHTML=formWorkers.map(n=>`<span class="ptag worker">${n}<span class="ptag-x" onclick="removeWorker('${n}')">✕</span></span>`).join('');}
 
-// ── PRINT / SALE / WORKERS (EDIT) ─────────────────────────────
 function editSelectPrint(v){editPrint=v;document.querySelectorAll('[id^="ept-"]').forEach(b=>b.classList.remove('active-screen','active-dtf','active-none'));document.getElementById(v==='screen'?'ept-screen':v==='dtf'?'ept-dtf':'ept-none').classList.add(v==='screen'?'active-screen':v==='dtf'?'active-dtf':'active-none');previewChanges();}
 function editSelectSale(v){editSaleBy=v;document.querySelectorAll('[id^="esb-"]').forEach(b=>b.classList.remove('active'));const m={"Sridevi":"esb-sridevi","Anu Prasad":"esb-anuprasad","Esha":"esb-esha","Other":"esb-other"};if(m[v])document.getElementById(m[v]).classList.add('active');document.getElementById('ef-sale-other').style.display=v==='Other'?'block':'none';previewChanges();}
 function editAddWorker(){const inp=document.getElementById('epi-worker');const v=inp.value.trim();if(!v||editWorkers.includes(v))return;editWorkers.push(v);inp.value='';renderEditWorkers();}
 function removeEditWorker(n){editWorkers=editWorkers.filter(x=>x!==n);renderEditWorkers();}
 function renderEditWorkers(){document.getElementById('ept-workers').innerHTML=editWorkers.map(n=>`<span class="ptag worker">${n}<span class="ptag-x" onclick="removeEditWorker('${n}')">✕</span></span>`).join('');previewChanges();}
 
-// ── SEARCH ────────────────────────────────────────────────────
 function onSearch(v){searchTerm=v.toLowerCase();document.getElementById('search-input').classList.toggle('has-value',v.length>0);document.getElementById('btn-clear-search').classList.toggle('visible',v.length>0);updateFilterBar();render();}
 function clearSearch(){document.getElementById('search-input').value='';onSearch('');}
 function updateFilterBar(){const bar=document.getElementById('active-filters-bar');const txt=document.getElementById('active-filters-text');const parts=[];if(searchTerm)parts.push(`Search: "${searchTerm}"`);if(activeFilter!=='all')parts.push(`Filter: ${activeFilter}`);if(parts.length>1){bar.classList.add('visible');txt.textContent='🔎 '+parts.join(' + ');}else bar.classList.remove('visible');}
 function clearAllFilters(){clearSearch();activeFilter='all';document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));document.getElementById('fb-all').classList.add('active');updateFilterBar();render();}
 
-// ── CUSTOM DATE ───────────────────────────────────────────────
 function onCustomDate(v){customDateFilter=v;document.getElementById('btn-clear-date').classList.toggle('visible',!!v);renderDayPanel();}
 function clearCustomDate(){customDateFilter='';document.getElementById('custom-date-input').value='';document.getElementById('btn-clear-date').classList.remove('visible');renderDayPanel();}
 function renderDayPanel(){
@@ -695,7 +643,7 @@ function renderDayPanel(){
   const dayO=orders.filter(o=>o.date===customDateFilter);
   panel.classList.add('open');
   document.getElementById('day-panel-title').textContent=`Orders for ${fmtDateFull(customDateFilter)}`;
-  document.getElementById('day-panel-sub').textContent=dayO.length?`${dayO.length} order${dayO.length>1?'s':''} · ${dayO.reduce((a,o)=>a+(o.qty||0),0)} units · Click for details`:'No orders for this day';
+  document.getElementById('day-panel-sub').textContent=dayO.length?`${dayO.length} order${dayO.length>1?'s':''} · ${dayO.reduce((a,o)=>a+(o.qty||0),0)} units`:'No orders for this day';
   document.getElementById('day-panel-count').textContent=dayO.length;
   const body=document.getElementById('day-panel-body');body.innerHTML='';
   if(!dayO.length){body.innerHTML='<div class="day-empty">📭 Nothing scheduled.</div>';return;}
@@ -711,12 +659,10 @@ function renderDayPanel(){
   });
 }
 
-// ── FILTER / VIEW ─────────────────────────────────────────────
 function filteredOrders(){return orders.filter(o=>{const ms=!searchTerm||o.client.toLowerCase().includes(searchTerm)||o.product.toLowerCase().includes(searchTerm);const td=todayISO();const mf=activeFilter==='all'?true:activeFilter==='delayed'?o.status==='delayed':activeFilter==='today'?o.date===td:activeFilter==='upcoming'?(isValidISO(o.date)&&o.date>td):true;return ms&&mf;});}
 function setFilter(f,btn){activeFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updateFilterBar();render();}
 function setView(v,btn){document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('kanban-view').style.display=v==='kanban'?'flex':'none';document.getElementById('list-view').style.display=v==='list'?'block':'none';render();}
 
-// ── RENDER ────────────────────────────────────────────────────
 function render(){renderKanban();renderList();updateKPIs();renderAlertBar();}
 function printChipHTML(p){if(p==='screen')return'<span class="print-chip">🖨 Screen</span>';if(p==='dtf')return'<span class="print-chip dtf">🎨 DTF</span>';return'';}
 
@@ -725,7 +671,7 @@ function renderAlertBar(){
   const delayed=orders.filter(o=>o.status==='delayed');
   if(!delayed.length){bar.className='alert-bar no-delays';bar.innerHTML='✅ No delayed orders right now. All clear!';return;}
   bar.className='alert-bar delays';
-  bar.innerHTML=`⚠️ <strong>${delayed.length} delayed order${delayed.length>1?'s':''}:</strong>&nbsp; ${delayed.map(o=>`${o.client} (${o.qty} pcs${o.time&&o.time!=='—'?', '+o.time:''})`).join(' &nbsp;·&nbsp; ')} <span style="margin-left:auto">Tap card → update →</span>`;
+  bar.innerHTML=`⚠️ <strong>${delayed.length} delayed order${delayed.length>1?'s':''}:</strong>&nbsp;${delayed.map(o=>`${o.client} (${o.qty} pcs${o.time&&o.time!=='—'?', '+o.time:''})`).join(' &nbsp;·&nbsp; ')}<span style="margin-left:auto">Tap card → update →</span>`;
 }
 
 function renderKanban(){
@@ -748,7 +694,7 @@ function buildCard(o){
   const nxt=STAGES[STAGES.indexOf(o.stage)+1];
   const prevIdx=STAGES.indexOf(o.stage)-1;
   const tl=o.timeline||[];const tlShow=tl.slice(-3);
-  const tlHTML=tl.length?`<div class="card-timeline"><div class="card-timeline-title">📅 History</div>${tlShow.map(t=>{const sc=STAGE_COLORS[t.stage]||{dot:'#9CA3AF'};const isEdit=t.type==='edit';return`<div class="tl-entry"><span class="tl-dot" style="background:${isEdit?'#E65100':t.back?'#C0392B':sc.dot}"></span><span>${isEdit?'✏️ Edited':(`<strong>${t.stage}</strong>${t.back?' ↩':''}`)} — ${t.date}</span></div>`;}).join('')}${tl.length>3?`<div style="font-size:10px;color:rgba(44,31,20,0.35);margin-top:2px">+${tl.length-3} more — open detail</div>`:''}</div>`:'';
+  const tlHTML=tl.length?`<div class="card-timeline"><div class="card-timeline-title">📅 History</div>${tlShow.map(t=>{const sc=STAGE_COLORS[t.stage]||{dot:'#9CA3AF'};const isEdit=t.type==='edit';const isDel=t.type==='deleted';return`<div class="tl-entry"><span class="tl-dot" style="background:${isDel?'#C0392B':isEdit?'#E65100':t.back?'#C0392B':sc.dot}"></span><span>${isDel?'🗑 Deleted':isEdit?'✏️ Edited':(`<strong>${t.stage}</strong>${t.back?' ↩':''}`)} — ${t.date}</span></div>`;}).join('')}${tl.length>3?`<div style="font-size:10px;color:rgba(44,31,20,0.35);margin-top:2px">+${tl.length-3} more — open detail</div>`:''}</div>`:'';
   const hasPeople=o.saleBy||(o.workers&&o.workers.length);
   div.innerHTML=`
     <div class="card-top"><div><div class="card-client">${o.client}</div><div class="card-product">${o.product}</div></div><span class="card-badge ${bm[o.status]||'badge-ok'}">${bt[o.status]||'OK'}</span></div>
@@ -803,24 +749,18 @@ function updateKPIs(){
   document.getElementById('kpi-delivery').textContent=orders.filter(o=>isValidISO(o.date)&&o.date>=td&&o.date<=weISO).length;
 }
 
-// ── ADVANCE ──────────────────────────────────────────────────
 async function quickAdvance(id,e){
   if(e)e.stopPropagation();
   const prev=snapshot();const o=orders.find(x=>x.id===id);if(!o)return;
   const idx=STAGES.indexOf(o.stage);if(idx>=STAGES.length-1)return;
-  pushUndo(prev);
-  o.stage=STAGES[idx+1];
+  pushUndo(prev);o.stage=STAGES[idx+1];
   const tlEntry={type:"stage",stage:o.stage,date:nowLabel(),back:false,note:''};
-  o.timeline.push(tlEntry);
-  if(o.stage==='Done')o.status='ok';
-  render();renderDayPanel();
-  showToast(`✓ "${o.client}" → ${o.stage}`);
-  // Save to sheet
+  o.timeline.push(tlEntry);if(o.stage==='Done')o.status='ok';
+  render();renderDayPanel();showToast(`✓ "${o.client}" → ${o.stage}`);
   await sheetPost({action:'updateOrder',...o,workers:o.workers});
   await sheetPost({action:'addTimeline',orderId:o.id,client:o.client,...tlEntry});
 }
 
-// ── MOVE BACK ─────────────────────────────────────────────────
 function quickBack(id,e){
   if(e)e.stopPropagation();
   const o=orders.find(x=>x.id===id);if(!o)return;
@@ -848,12 +788,11 @@ async function executeBack(){
   await sheetPost({action:'addTimeline',orderId:o.id,client:o.client,...tlEntry});
 }
 
-// ── REMOVE ────────────────────────────────────────────────────
 function quickRemove(id,e){
   if(e)e.stopPropagation();currentOrderId=id;
   const o=orders.find(x=>x.id===id);if(!o)return;
   document.getElementById('confirm-sub').textContent=`"${o.client}" — ${o.product}`;
-  document.getElementById('confirm-text').textContent=`Permanently remove "${o.client}" (${o.qty} pcs, ${fmtDate(o.date)}) from the tracker?`;
+  document.getElementById('confirm-text').textContent=`Permanently remove "${o.client}" (${o.qty} pcs, ${fmtDate(o.date)})? This will be logged in Timeline.`;
   document.getElementById('confirm-modal').classList.add('open');
 }
 function confirmDelete(){const o=orders.find(x=>x.id===currentOrderId);if(o){quickRemove(o.id,null);closeModal('detail-modal');}}
@@ -861,11 +800,10 @@ async function deleteOrder(){
   const prev=snapshot();const o=orders.find(x=>x.id===currentOrderId);const name=o?o.client:'Order';
   pushUndo(prev);orders=orders.filter(x=>x.id!==currentOrderId);
   closeModal('confirm-modal');render();renderDayPanel();
-  showToast(`🗑 "${name}" removed — ↩ Undo to restore locally`);
-  await sheetPost({action:'deleteOrder',id:currentOrderId});
+  showToast(`🗑 "${name}" removed — logged in Timeline`);
+  await sheetPost({action:'deleteOrder',id:currentOrderId,client:name,reason:'Order deleted by user'});
 }
 
-// ── DETAIL ────────────────────────────────────────────────────
 function openDetail(id,e){
   if(e)e.stopPropagation();
   const o=orders.find(x=>x.id===id);if(!o)return;
@@ -886,14 +824,16 @@ function openDetail(id,e){
   if(hp){ps.style.display='block';const sr=document.getElementById('m-sale-row');if(o.saleBy){sr.style.display='flex';document.getElementById('m-sale-tags').innerHTML=`<span class="person-tag sale">🏷 ${o.saleBy}</span>`;}else sr.style.display='none';const wr=document.getElementById('m-workers-row');if(o.workers&&o.workers.length){wr.style.display='flex';document.getElementById('m-workers-tags').innerHTML=o.workers.map(n=>`<span class="person-tag worker">🔧 ${n}</span>`).join('');}else wr.style.display='none';}else ps.style.display='none';
   const tl=o.timeline||[];const tlBody=document.getElementById('m-timeline-body');tlBody.innerHTML='';
   tl.forEach((t,i)=>{
-    const sc=STAGE_COLORS[t.stage]||{dot:'#9CA3AF'};const isLast=i===tl.length-1;const isEdit=t.type==='edit';
+    const sc=STAGE_COLORS[t.stage]||{dot:'#9CA3AF'};const isLast=i===tl.length-1;
+    const isEdit=t.type==='edit';const isDel=t.type==='deleted';
+    const dotColor=isDel?'#C0392B':isEdit?'#E65100':t.back?'#C0392B':sc.dot;
     const item=document.createElement('div');item.className='tl-item';
-    item.innerHTML=`<div class="tl-line-wrap"><div class="tl-circle" style="background:${isEdit?'#E65100':t.back?'#C0392B':sc.dot}"></div>${!isLast?'<div class="tl-vline"></div>':''}</div>
+    item.innerHTML=`<div class="tl-line-wrap"><div class="tl-circle" style="background:${dotColor}"></div>${!isLast?'<div class="tl-vline"></div>':''}</div>
       <div class="tl-content">
-        <div class="tl-stage-name">${isEdit?`✏️ <span style="background:#FFF3E0;color:#E65100;padding:1px 7px;border-radius:20px;font-size:11px">Edited</span>`:`${t.back?'↩ ':''}<span style="background:${sc.bg};color:${sc.text};padding:1px 7px;border-radius:20px;font-size:11px">${t.stage}</span>`}</div>
+        <div class="tl-stage-name">${isDel?`🗑 <span style="background:#FAE9E7;color:#C0392B;padding:1px 7px;border-radius:20px;font-size:11px">Deleted</span>`:isEdit?`✏️ <span style="background:#FFF3E0;color:#E65100;padding:1px 7px;border-radius:20px;font-size:11px">Edited</span>`:`${t.back?'↩ ':''}<span style="background:${sc.bg};color:${sc.text};padding:1px 7px;border-radius:20px;font-size:11px">${t.stage}</span>`}</div>
         <div class="tl-date">${t.date}</div>
-        ${t.note&&!isEdit?`<div class="tl-note">Reason: ${t.note}</div>`:''}
-        ${isEdit&&t.note?`<div class="tl-edit-note">${t.note}</div>`:''}
+        ${t.note&&!isEdit&&!isDel?`<div class="tl-note">Reason: ${t.note}</div>`:''}
+        ${(isEdit||isDel)&&t.note?`<div class="tl-edit-note">${t.note}</div>`:''}
         ${isEdit&&t.changes&&t.changes.length?t.changes.map(c=>`<div class="edit-diff"><span class="edit-diff-old">${c.field}: ${c.old}</span><span>→</span><span class="edit-diff-new">${c.new}</span></div>`).join(''):''}
       </div>`;
     tlBody.appendChild(item);
@@ -908,7 +848,6 @@ function openDetail(id,e){
 }
 async function advanceStage(){const o=orders.find(x=>x.id===currentOrderId);if(!o)return;const nv=document.getElementById('m-notes-input').value.trim();if(nv)o.remarks=(o.remarks?o.remarks+' | ':'')+nv;closeModal('detail-modal');await quickAdvance(o.id,null);}
 
-// ── EDIT ORDER ────────────────────────────────────────────────
 function openEditFromCard(id,e){if(e)e.stopPropagation();currentOrderId=id;openEditModal();}
 function openEditModal(){
   const o=orders.find(x=>x.id===currentOrderId);if(!o)return;
@@ -959,7 +898,7 @@ function previewChanges(){
 async function saveEdit(){
   const o=orders.find(x=>x.id===currentOrderId);if(!o)return;
   const reason=document.getElementById('ef-reason').value.trim();
-  if(!reason){showToast('⚠️ Please enter a reason for the edit');document.getElementById('ef-reason').focus();return;}
+  if(!reason){showToast('⚠️ Please enter a reason');document.getElementById('ef-reason').focus();return;}
   const newSaleBy=editSaleBy==='Other'?(document.getElementById('ef-sale-other').value.trim()||'Other'):editSaleBy;
   const newClient=document.getElementById('ef-client').value.trim()||o.client;
   const newProduct=document.getElementById('ef-product').value.trim()||o.product;
@@ -991,7 +930,6 @@ async function saveEdit(){
   await sheetPost({action:'addTimeline',orderId:o.id,client:o.client,...tlEntry,changes:JSON.stringify(changes)});
 }
 
-// ── ADD ORDER ─────────────────────────────────────────────────
 function openAddModal(){
   selectedPrint='none';selectPrint('none');selectedSaleBy='';
   document.querySelectorAll('#add-modal .sale-by-btn').forEach(b=>b.classList.remove('active'));
@@ -1003,41 +941,27 @@ async function addOrder(){
   const client=document.getElementById('f-client').value.trim();if(!client){showToast('⚠️ Client name required');return;}
   const saleBy=selectedSaleBy==='Other'?(document.getElementById('f-sale-other').value.trim()||'Other'):selectedSaleBy;
   const stg=document.getElementById('f-stage').value;
-  const newOrder={
-    id:nextId++,client,
-    product:document.getElementById('f-product').value||'—',
-    qty:parseInt(document.getElementById('f-qty').value)||0,
-    date:document.getElementById('f-date').value||'',
-    time:document.getElementById('f-notes').value||'—',
-    stage:stg,status:document.getElementById('f-priority').value,
-    print:selectedPrint,saleBy,workers:[...formWorkers],remarks:'',edited:false,
-    timeline:[{type:'stage',stage:stg,date:nowLabel(),back:false,note:'Order created'}]
-  };
-  orders.unshift(newOrder); // add to top of local array too
+  const newOrder={id:nextId++,client,product:document.getElementById('f-product').value||'—',qty:parseInt(document.getElementById('f-qty').value)||0,date:document.getElementById('f-date').value||'',time:document.getElementById('f-notes').value||'—',stage:stg,status:document.getElementById('f-priority').value,print:selectedPrint,saleBy,workers:[...formWorkers],remarks:'',edited:false,timeline:[{type:'stage',stage:stg,date:nowLabel(),back:false,note:'Order created'}]};
+  orders.unshift(newOrder);
   closeModal('add-modal');showToast('✓ Order added — saving to Sheets…');render();renderDayPanel();
   ['f-client','f-product','f-qty','f-date','f-notes'].forEach(id=>document.getElementById(id).value='');
   formWorkers=[];selectPrint('none');selectedSaleBy='';
   document.querySelectorAll('#add-modal .sale-by-btn').forEach(b=>b.classList.remove('active'));
-  // Save to sheet
   await sheetPost({action:'addOrder',...newOrder,workers:newOrder.workers});
   await sheetPost({action:'addTimeline',orderId:newOrder.id,client:newOrder.client,stage:stg,timestamp:nowLabel(),type:'stage',back:false,note:'Order created',changes:''});
 }
 
-// ── MODAL HELPERS ─────────────────────────────────────────────
 function closeModal(id){
   document.getElementById(id).classList.remove('open');
   if(id==='edit-modal'){document.getElementById('edit-change-log').classList.remove('visible');document.getElementById('edit-change-list').innerHTML='';}
 }
 document.querySelectorAll('.modal-overlay').forEach(el=>{
-  el.addEventListener('click',e=>{
-    if(e.target===el){const id=el.id;el.classList.remove('open');if(id==='edit-modal'){document.getElementById('edit-change-log').classList.remove('visible');document.getElementById('edit-change-list').innerHTML='';}}
-  });
+  el.addEventListener('click',e=>{if(e.target===el){const id=el.id;el.classList.remove('open');if(id==='edit-modal'){document.getElementById('edit-change-log').classList.remove('visible');document.getElementById('edit-change-list').innerHTML='';}}});
 });
 document.getElementById('epi-worker').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();editAddWorker();}});
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
 
-// ── BOOT ──────────────────────────────────────────────────────
 initApp();
 </script>
 </body>
