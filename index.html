@@ -651,7 +651,22 @@ async function initApp(){
     if(data.timeline&&data.timeline.length){
       data.timeline.forEach(t=>{
         const o=orders.find(x=>String(x.id)===String(t['Order ID']));
-        if(o)o.timeline.push({type:String(t['Type']||'stage'),stage:String(t['Stage']||''),date:String(t['Timestamp']||''),back:t['Moved Back?']===true||String(t['Moved Back?']).toUpperCase()==='TRUE',note:String(t['Reason / Note']||''),changes:t['Changes']||[]});
+        if(o){
+          let changes=[];
+          try{changes=t['Changes']?JSON.parse(t['Changes']):[];}catch(e){changes=[];}
+          o.timeline.push({
+            type:String(t['Type']||'stage'),
+            stage:String(t['Stage']||''),
+            date:cleanSheetValue(t['Timestamp'])||String(t['Timestamp']||''),
+            back:t['Moved Back?']===true||String(t['Moved Back?']).toUpperCase()==='TRUE',
+            note:String(t['Reason / Note']||''),
+            changes:Array.isArray(changes)?changes.map(c=>({
+              field:String(c.field||c.f||''),
+              old:cleanSheetValue(c.old)||String(c.old||''),
+              new:cleanSheetValue(c.new)||String(c.new||'')
+            })):[]
+          });
+        }
       });
     }
     nextId=Math.max(...orders.map(o=>o.id),0)+1;
