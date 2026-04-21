@@ -629,11 +629,12 @@ async function initApp(){
       stage:row['Stage']||'Cutting',status:row['Status']||'ok',print:row['Print']||'none',
       saleBy:row['Sale By']||'',
       workers:Array.isArray(row['Workers'])?row['Workers']:(row['Workers']?String(row['Workers']).split('|').map(w=>w.trim()).filter(Boolean):[]),
-      remarks:row['Remarks']||'',edited:row['Edited']===true||row['Edited']==='TRUE',
+      remarks:row['Remarks']||'',
+      edited:row['Edited']===true||row['Edited']==='TRUE',
       entryDate:row['Created At']||'',
       cuttingDate:row['Cutting Date']||'',
       timeline:[]
-    }));
+    })).filter(o=>o.client);
     if(data.timeline&&data.timeline.length){
       data.timeline.forEach(t=>{
         const o=orders.find(x=>String(x.id)===String(t['Order ID']));
