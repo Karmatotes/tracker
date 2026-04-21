@@ -347,7 +347,6 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
       <div class="stage-progress" id="m-stage-progress"></div>
       <div class="modal-row"><label>Quantity</label><div class="val" id="m-qty">—</div></div>
       <div class="modal-row"><label>Entry Date</label><div class="val" id="m-entry-date">—</div></div>
-      <div class="modal-row"><label>Cutting Started</label><div class="val" id="m-cutting-date">—</div></div>
       <div class="modal-row"><label>Delivery</label><div class="val" id="m-date">—</div></div>
       <div class="modal-row"><label>Time</label><div class="val" id="m-time">—</div></div>
       <div class="modal-row"><label>Print Type</label><div class="val" id="m-print">—</div></div>
@@ -549,30 +548,7 @@ let selectedPrint='none',selectedSaleBy='',customDateFilter='',formWorkers=[];
 let editPrint='none',editSaleBy='',editWorkers=[];
 let undoStack=[],redoStack=[],pendingBackId=null;
 
-// ── SMART STAGE FLOW ─────────────────────────────────────────
-// Returns the correct next stage based on print type
-function getNextStage(currentStage, print) {
-  const idx = STAGES.indexOf(currentStage);
-  if (idx < 0 || idx >= STAGES.length - 1) return null;
-  let next = STAGES[idx + 1];
-  // Skip Printing if no print type selected
-  if (next === "Printing" && (!print || print === "none")) {
-    next = "Stitching";
-  }
-  return next;
-}
-
-// Returns correct prev stage based on print type
-function getPrevStage(currentStage, print) {
-  const idx = STAGES.indexOf(currentStage);
-  if (idx <= 0) return null;
-  let prev = STAGES[idx - 1];
-  // Skip Printing when going back if no print type
-  if (prev === "Printing" && (!print || print === "none")) {
-    prev = "Cutting";
-  }
-  return prev;
-}
+function todayISO(){return new Date().toISOString().split('T')[0]}
 function nowLabel(){const n=new Date();return n.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+', '+n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});}
 function fmtDate(iso){if(!iso||!iso.match(/^\d{4}-\d{2}-\d{2}$/))return iso||'TBD';const[,m,d]=iso.split('-');const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return`${parseInt(d)}-${mo[parseInt(m)-1]}`;}
 function fmtDateFull(iso){if(!iso)return'—';return new Date(iso+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
@@ -629,12 +605,10 @@ async function initApp(){
       stage:row['Stage']||'Cutting',status:row['Status']||'ok',print:row['Print']||'none',
       saleBy:row['Sale By']||'',
       workers:Array.isArray(row['Workers'])?row['Workers']:(row['Workers']?String(row['Workers']).split('|').map(w=>w.trim()).filter(Boolean):[]),
-      remarks:row['Remarks']||'',
-      edited:row['Edited']===true||row['Edited']==='TRUE',
+      remarks:row['Remarks']||'',edited:row['Edited']===true||row['Edited']==='TRUE',
       entryDate:row['Created At']||'',
-      cuttingDate:row['Cutting Date']||'',
       timeline:[]
-    })).filter(o=>o.client);
+    }));
     if(data.timeline&&data.timeline.length){
       data.timeline.forEach(t=>{
         const o=orders.find(x=>String(x.id)===String(t['Order ID']));
@@ -730,8 +704,8 @@ function buildCard(o){
   const div=document.createElement('div');div.className=`card ${o.status}`;
   const bm={delayed:'badge-delayed',urgent:'badge-urgent',ok:'badge-ok'};
   const bt={delayed:'DELAYED',urgent:'URGENT',ok:'ON TRACK'};
-  const nxt=getNextStage(o.stage,o.print);
-  const prevStage=getPrevStage(o.stage,o.print);
+  const nxt=STAGES[STAGES.indexOf(o.stage)+1];
+  const prevIdx=STAGES.indexOf(o.stage)-1;
   const tl=o.timeline||[];const tlShow=tl.slice(-3);
   const tlHTML=tl.length?`<div class="card-timeline"><div class="card-timeline-title">📅 History</div>${tlShow.map(t=>{const sc=STAGE_COLORS[t.stage]||{dot:'#9CA3AF'};const isEdit=t.type==='edit';const isDel=t.type==='deleted';return`<div class="tl-entry"><span class="tl-dot" style="background:${isDel?'#C0392B':isEdit?'#E65100':t.back?'#C0392B':sc.dot}"></span><span>${isDel?'🗑 Deleted':isEdit?'✏️ Edited':(`<strong>${t.stage}</strong>${t.back?' ↩':''}`)} — ${t.date}</span></div>`;}).join('')}${tl.length>3?`<div style="font-size:10px;color:rgba(44,31,20,0.35);margin-top:2px">+${tl.length-3} more — open detail</div>`:''}</div>`:'';
   const hasPeople=o.saleBy||(o.workers&&o.workers.length);
@@ -744,12 +718,11 @@ function buildCard(o){
       ${printChipHTML(o.print)}
       ${o.edited?'<span class="card-edited-badge">✏️ Edited</span>':''}
     </div>
-    ${o.cuttingDate?`<div style="margin-top:5px;font-size:10px;color:rgba(44,31,20,0.5);font-family:'DM Mono',monospace">✂️ Cutting started: ${o.cuttingDate}</div>`:''}
     ${hasPeople?`<div class="people-chips">${o.saleBy?`<span class="avatar-chip sale">🏷 ${o.saleBy}</span>`:''}${(o.workers||[]).map(n=>`<span class="avatar-chip worker">🔧 ${n}</span>`).join('')}</div>`:''}
     ${tlHTML}
     <div class="card-actions">
-      ${o.stage!=='Done'&&nxt?`<button class="btn-stage" onclick="quickAdvance(${o.id},event)">✓ ${nxt}</button>`:''}
-      <button class="btn-stage-back" onclick="quickBack(${o.id},event)" ${!prevStage?'disabled':''}>← Back</button>
+      ${o.stage!=='Done'?`<button class="btn-stage" onclick="quickAdvance(${o.id},event)">✓ ${nxt||'Done'}</button>`:''}
+      <button class="btn-stage-back" onclick="quickBack(${o.id},event)" ${prevIdx<0?'disabled':''}>← Back</button>
       <button class="btn-edit-card" onclick="openEditFromCard(${o.id},event)">✏️</button>
       <button class="btn-detail" onclick="openDetail(${o.id},event)">Detail</button>
       <button class="btn-remove-card" onclick="quickRemove(${o.id},event)">🗑</button>
@@ -792,13 +765,8 @@ function updateKPIs(){
 async function quickAdvance(id,e){
   if(e)e.stopPropagation();
   const prev=snapshot();const o=orders.find(x=>x.id===id);if(!o)return;
-  const next=getNextStage(o.stage,o.print);
-  if(!next)return;
-  pushUndo(prev);
-  // If moving into Cutting, record cutting start date if not already set
-  const prevStage=o.stage;
-  o.stage=next;
-  if(next==='Cutting'&&!o.cuttingDate)o.cuttingDate=nowLabel();
+  const idx=STAGES.indexOf(o.stage);if(idx>=STAGES.length-1)return;
+  pushUndo(prev);o.stage=STAGES[idx+1];
   const tlEntry={type:"stage",stage:o.stage,date:nowLabel(),back:false,note:''};
   o.timeline.push(tlEntry);if(o.stage==='Done')o.status='ok';
   render();renderDayPanel();showToast(`✓ "${o.client}" → ${o.stage}`);
@@ -822,8 +790,8 @@ async function executeBack(){
   const reason=document.getElementById('back-reason-input').value.trim();
   if(!reason){document.getElementById('back-reason-err').style.display='block';return;}
   const prev=snapshot();const o=orders.find(x=>x.id===pendingBackId);if(!o)return;
-  const prevStage=getPrevStage(o.stage,o.print);if(!prevStage)return;
-  pushUndo(prev);o.stage=prevStage;
+  const idx=STAGES.indexOf(o.stage);if(idx<=0)return;
+  pushUndo(prev);o.stage=STAGES[idx-1];
   const tlEntry={type:"stage",stage:o.stage,date:nowLabel(),back:true,note:reason};
   o.timeline.push(tlEntry);
   closeModal('back-modal');
@@ -857,7 +825,6 @@ function openDetail(id,e){
   document.getElementById('m-product').textContent=o.product;
   document.getElementById('m-qty').textContent=`${o.qty||'—'} pcs`;
   document.getElementById('m-entry-date').textContent=o.entryDate||'—';
-  document.getElementById('m-cutting-date').textContent=o.cuttingDate||'Not started yet';
   document.getElementById('m-date').textContent=fmtDate(o.date);
   document.getElementById('m-time').textContent=o.time||'—';
   document.getElementById('m-print').textContent=o.print==='screen'?'🖨 Screen Print':o.print==='dtf'?'🎨 DTF':'None';
