@@ -15,16 +15,13 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--bark);min-height:100vh;overflow-x:hidden}
-
 .sync-bar{background:var(--bark);color:rgba(255,255,255,0.7);padding:3px 24px;font-size:11px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:8px;height:24px;position:sticky;top:0;z-index:101}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:#9CA3AF;flex-shrink:0;transition:background .3s}
 .sync-dot.syncing{background:#F59E0B;animation:pulse .8s infinite}
 .sync-dot.ok{background:#22C55E}
 .sync-dot.err{background:#EF4444}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.sync-text{flex:1}
-.sync-time{opacity:.5;font-size:10px}
-
+.sync-text{flex:1}.sync-time{opacity:.5;font-size:10px}
 header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:24px;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,0.25)}
 .logo{display:flex;align-items:center;gap:10px}
 .logo-mark{width:34px;height:34px;background:var(--moss);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
@@ -38,21 +35,17 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 .btn-ur{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:7px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;gap:4px}
 .btn-ur:hover:not(:disabled){background:rgba(255,255,255,0.22)}
 .btn-ur:disabled{opacity:.3;cursor:not-allowed}
-
 .alert-bar{color:#FEE2E2;padding:8px 24px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:36px}
 .alert-bar.delays{background:#7F1D1D}
 .alert-bar.no-delays{background:#1a3a2a;color:#A7F3D0}
-
 .active-filters-bar{padding:4px 24px;background:#f0f8f2;border-bottom:1px solid rgba(59,107,69,0.2);font-size:12px;color:var(--moss);font-weight:500;display:none;align-items:center;gap:8px}
 .active-filters-bar.visible{display:flex}
-
 .summary{display:flex;gap:12px;padding:16px 24px;overflow-x:auto;background:var(--surface);border-bottom:1px solid var(--border)}
 .kpi{background:var(--cream);border-radius:10px;padding:10px 16px;min-width:110px;flex-shrink:0;border:1px solid var(--border)}
 .kpi-val{font-size:24px;font-weight:700;line-height:1;color:var(--bark)}
 .kpi-label{font-size:11px;color:rgba(44,31,20,0.55);margin-top:3px;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
 .kpi.red{background:var(--red-soft);border-color:rgba(192,57,43,0.2)}.kpi.red .kpi-val{color:var(--red)}
 .kpi.green{background:var(--green-soft);border-color:rgba(59,107,69,0.2)}.kpi.green .kpi-val{color:var(--moss)}
-
 .controls{padding:12px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .search-wrap{position:relative}
 .search-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--bark);width:180px;outline:none;transition:border-color .15s}
@@ -71,14 +64,12 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 .view-toggle{margin-left:auto;display:flex;gap:4px}
 .view-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:14px;transition:all .15s}
 .view-btn.active{background:var(--bark);color:#fff;border-color:var(--bark)}
-
 #loading-overlay{position:fixed;inset:0;background:rgba(44,31,20,0.75);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
 #loading-overlay.hidden{display:none}
 .loading-spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{color:#fff;font-size:15px;font-weight:600}
 .loading-sub{color:rgba(255,255,255,0.6);font-size:12px}
-
 #day-panel{display:none;margin:0 24px 14px;background:var(--surface);border:1.5px solid var(--sand);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
 #day-panel.open{display:block}
 .day-panel-header{background:var(--sand);color:var(--bark);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:14px}
@@ -91,7 +82,6 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 .day-meta{font-size:11px;color:rgba(44,31,20,0.5);font-family:'DM Mono',monospace;white-space:nowrap}
 .day-stage-pill{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;white-space:nowrap}
 .day-empty{color:rgba(44,31,20,0.35);font-size:13px;text-align:center;padding:20px 0}
-
 #kanban-view{padding:0 24px 40px;display:flex;gap:14px;overflow-x:auto;align-items:flex-start}
 .column{flex-shrink:0;width:240px}
 .col-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px 10px 0 0}
@@ -105,7 +95,6 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 .col-finishing .col-header{background:#FAE8FF;color:#6B21A8}.col-finishing .col-dot{background:#A855F7}
 .col-packing .col-header{background:#DCFCE7;color:#166534}.col-packing .col-dot{background:#22C55E}
 .col-done .col-header{background:#F3F4F6;color:#374151}.col-done .col-dot{background:#9CA3AF}
-
 .card{background:var(--surface);border-radius:9px;padding:11px 12px;border:1px solid var(--border);cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
 .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
 .card.delayed::before,.card.urgent::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
@@ -144,7 +133,6 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 .btn-detail:hover{background:var(--sand);color:#fff;border-color:var(--sand)}
 .btn-remove-card{background:var(--red-soft);color:var(--red);border:1px solid rgba(192,57,43,0.2);border-radius:6px;padding:6px 8px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .btn-remove-card:hover{background:var(--red);color:#fff}
-
 #list-view{display:none;padding:0 24px 40px}
 .list-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
 .list-table th{background:var(--bark);color:#fff;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:11px 14px;text-align:left}
@@ -152,7 +140,6 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 .list-table tr:last-child td{border-bottom:none}
 .list-table tr:hover td{background:var(--cream)}
 .stage-pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
-
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(44,31,20,0.55);z-index:200;backdrop-filter:blur(3px);align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:var(--surface);border-radius:16px;width:94%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.3);animation:slideUp .25s ease}
@@ -195,7 +182,6 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 .person-tag{font-size:12px;font-weight:600;padding:3px 9px;border-radius:20px}
 .person-tag.sale{background:#FEF3C7;color:#92400E}
 .person-tag.worker{background:#EEF2FF;color:#1E40AF}
-
 .btn-advance{width:100%;background:var(--moss);color:#fff;border:none;border-radius:10px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-advance:hover{background:var(--moss-light)}
 .btn-advance:disabled{background:#9CA3AF;cursor:not-allowed}
@@ -241,7 +227,6 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 .sale-by-btn{padding:9px 10px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:2px solid var(--border);background:var(--cream);color:rgba(44,31,20,0.55);text-align:center;transition:all .15s}
 .sale-by-btn.active{background:#FEF3C7;color:#92400E;border-color:#F59E0B}
 .people-builder{background:var(--cream);border-radius:10px;padding:12px;border:1px solid var(--border)}
-.people-builder-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(44,31,20,0.5);margin-bottom:10px}
 .person-input-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
 .person-input-row label{font-size:12px;font-weight:600;color:rgba(44,31,20,0.6);min-width:60px;flex-shrink:0}
 .person-input{flex:1;background:#fff;border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--bark);outline:none}
@@ -331,7 +316,7 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 <div id="kanban-view"></div>
 <div id="list-view">
   <table class="list-table">
-    <thead><tr><th>#</th><th>Client</th><th>Product</th><th>Print</th><th>Qty</th><th>Delivery</th><th>Sale By</th><th>Workers</th><th>Stage</th><th>Status</th><th>Edited</th><th>Action</th></tr></thead>
+    <thead><tr><th>#</th><th>Client</th><th>Product</th><th>Print</th><th>Qty</th><th>Delivery</th><th>Cutting Date</th><th>Sale By</th><th>Workers</th><th>Stage</th><th>Status</th><th>Edited</th><th>Action</th></tr></thead>
     <tbody id="list-body"></tbody>
   </table>
 </div>
@@ -347,6 +332,7 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
       <div class="stage-progress" id="m-stage-progress"></div>
       <div class="modal-row"><label>Quantity</label><div class="val" id="m-qty">—</div></div>
       <div class="modal-row"><label>Entry Date</label><div class="val" id="m-entry-date">—</div></div>
+      <div class="modal-row"><label>Cutting Started</label><div class="val" id="m-cutting-date">—</div></div>
       <div class="modal-row"><label>Delivery</label><div class="val" id="m-date">—</div></div>
       <div class="modal-row"><label>Time</label><div class="val" id="m-time">—</div></div>
       <div class="modal-row"><label>Print Type</label><div class="val" id="m-print">—</div></div>
@@ -397,7 +383,12 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
       <div class="form-group">
         <label>Order Start / Entry Date</label>
         <input class="form-control" id="ef-entry-date" type="date" oninput="previewChanges()">
-        <div style="font-size:11px;color:rgba(44,31,20,0.4);margin-top:4px">Leave blank to keep existing. For new orders this is auto-captured.</div>
+        <div style="font-size:11px;color:rgba(44,31,20,0.4);margin-top:4px">Leave blank to keep existing.</div>
+      </div>
+      <div class="form-group">
+        <label>Cutting Start Date</label>
+        <input class="form-control" id="ef-cutting-date" type="date" oninput="previewChanges()">
+        <div style="font-size:11px;color:rgba(44,31,20,0.4);margin-top:4px">Leave blank to keep existing. Auto-captured when order enters Cutting.</div>
       </div>
       <div class="edit-section-label">🖨 Print Type</div>
       <div class="print-type-wrap" style="margin-bottom:14px">
@@ -456,7 +447,7 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 <div class="modal-overlay" id="confirm-modal">
   <div class="confirm-modal">
     <div class="confirm-header del" style="display:flex;align-items:flex-start;justify-content:space-between">
-      <div><div class="modal-title">🗑 Remove Order?</div><div class="modal-sub" id="confirm-sub">Deletion will be logged in Timeline.</div></div>
+      <div><div class="modal-title">🗑 Remove Order?</div><div class="modal-sub" id="confirm-sub">Deletion logged in Timeline.</div></div>
       <button class="modal-close" onclick="closeModal('confirm-modal')">✕</button>
     </div>
     <div class="confirm-body">
@@ -548,20 +539,42 @@ let selectedPrint='none',selectedSaleBy='',customDateFilter='',formWorkers=[];
 let editPrint='none',editSaleBy='',editWorkers=[];
 let undoStack=[],redoStack=[],pendingBackId=null;
 
+// ── SMART STAGE FLOW ──────────────────────────────────────────
+function getNextStage(currentStage,print){
+  const idx=STAGES.indexOf(currentStage);
+  if(idx<0||idx>=STAGES.length-1)return null;
+  let next=STAGES[idx+1];
+  if(next==="Printing"&&(!print||print==="none"))next="Stitching";
+  return next;
+}
+function getPrevStage(currentStage,print){
+  const idx=STAGES.indexOf(currentStage);
+  if(idx<=0)return null;
+  let prev=STAGES[idx-1];
+  if(prev==="Printing"&&(!print||print==="none"))prev="Cutting";
+  return prev;
+}
+
 function todayISO(){return new Date().toISOString().split('T')[0]}
 function nowLabel(){const n=new Date();return n.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+', '+n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});}
 function fmtDate(iso){if(!iso||!iso.match(/^\d{4}-\d{2}-\d{2}$/))return iso||'TBD';const[,m,d]=iso.split('-');const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return`${parseInt(d)}-${mo[parseInt(m)-1]}`;}
 function fmtDateFull(iso){if(!iso)return'—';return new Date(iso+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
 function isValidISO(d){return d&&/^\d{4}-\d{2}-\d{2}$/.test(d);}
+function parseEntryDateToISO(str){
+  if(!str)return'';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(str))return str;
+  const mo={'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'};
+  const m=str.match(/(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/);
+  if(m)return`${m[3]}-${mo[m[2]]||'01'}-${m[1].padStart(2,'0')}`;
+  return'';
+}
 
 function setSyncStatus(state,msg){
   const dot=document.getElementById('sync-dot');
   const txt=document.getElementById('sync-text');
   const time=document.getElementById('sync-time');
-  dot.className='sync-dot '+state;
-  txt.textContent=msg;
-  if(state==='ok')time.textContent='Last sync: '+nowLabel();
-  else time.textContent='';
+  dot.className='sync-dot '+state;txt.textContent=msg;
+  if(state==='ok')time.textContent='Last sync: '+nowLabel();else time.textContent='';
 }
 
 async function sheetCall(params){
@@ -570,13 +583,8 @@ async function sheetCall(params){
     const res=await fetch(`${SHEET_URL}?${new URLSearchParams(params).toString()}`);
     const data=await res.json();
     if(data.error)throw new Error(data.error);
-    setSyncStatus('ok','Synced · karmatotes@gmail.com');
-    return data;
-  }catch(err){
-    setSyncStatus('err','Sync failed — working offline.');
-    console.error('Sheet sync error:',err);
-    return null;
-  }
+    setSyncStatus('ok','Synced · karmatotes@gmail.com');return data;
+  }catch(err){setSyncStatus('err','Sync failed — working offline.');console.error('Sheet sync error:',err);return null;}
 }
 
 async function sheetPost(body){
@@ -585,13 +593,8 @@ async function sheetPost(body){
     const res=await fetch(SHEET_URL,{method:'POST',body:JSON.stringify(body)});
     const data=await res.json();
     if(data.error)throw new Error(data.error);
-    setSyncStatus('ok','Saved · karmatotes@gmail.com');
-    return data;
-  }catch(err){
-    setSyncStatus('err','Save failed — data safe locally.');
-    console.error('Sheet save error:',err);
-    return null;
-  }
+    setSyncStatus('ok','Saved · karmatotes@gmail.com');return data;
+  }catch(err){setSyncStatus('err','Save failed — data safe locally.');console.error('Sheet save error:',err);return null;}
 }
 
 async function initApp(){
@@ -600,19 +603,27 @@ async function initApp(){
   document.getElementById('loading-overlay').classList.add('hidden');
   if(data&&data.orders&&data.orders.length>0){
     orders=data.orders.map(row=>({
-      id:Number(row['ID']),client:row['Client']||'',product:row['Product']||'',
-      qty:Number(row['Qty'])||0,date:row['Delivery Date']||'',time:row['Time']||'—',
-      stage:row['Stage']||'Cutting',status:row['Status']||'ok',print:row['Print']||'none',
-      saleBy:row['Sale By']||'',
+      id:Number(row['ID']),
+      client:String(row['Client']||''),
+      product:String(row['Product']||''),
+      qty:Number(row['Qty'])||0,
+      date:String(row['Delivery Date']||''),
+      time:String(row['Time']||'—'),
+      stage:String(row['Stage']||'Cutting'),
+      status:String(row['Status']||'ok'),
+      print:String(row['Print']||'none'),
+      saleBy:String(row['Sale By']||''),
       workers:Array.isArray(row['Workers'])?row['Workers']:(row['Workers']?String(row['Workers']).split('|').map(w=>w.trim()).filter(Boolean):[]),
-      remarks:row['Remarks']||'',edited:row['Edited']===true||row['Edited']==='TRUE',
-      entryDate:row['Created At']||'',
+      remarks:String(row['Remarks']||''),
+      edited:row['Edited']===true||row['Edited']==='TRUE',
+      entryDate:String(row['Created At']||''),
+      cuttingDate:String(row['Cutting Date']||''),
       timeline:[]
-    }));
+    })).filter(o=>o.client&&o.client.trim()!=='');
     if(data.timeline&&data.timeline.length){
       data.timeline.forEach(t=>{
         const o=orders.find(x=>String(x.id)===String(t['Order ID']));
-        if(o)o.timeline.push({type:t['Type']||'stage',stage:t['Stage']||'',date:t['Timestamp']||'',back:t['Moved Back?']===true||t['Moved Back?']==='TRUE',note:t['Reason / Note']||'',changes:t['Changes']||[]});
+        if(o)o.timeline.push({type:String(t['Type']||'stage'),stage:String(t['Stage']||''),date:String(t['Timestamp']||''),back:t['Moved Back?']===true||String(t['Moved Back?']).toUpperCase()==='TRUE',note:String(t['Reason / Note']||''),changes:t['Changes']||[]});
       });
     }
     nextId=Math.max(...orders.map(o=>o.id),0)+1;
@@ -636,7 +647,6 @@ function selectSaleBy(v){selectedSaleBy=v;document.querySelectorAll('#add-modal 
 function addWorker(){const inp=document.getElementById('pi-worker');const v=inp.value.trim();if(!v||formWorkers.includes(v))return;formWorkers.push(v);inp.value='';renderFormWorkers();}
 function removeWorker(n){formWorkers=formWorkers.filter(x=>x!==n);renderFormWorkers();}
 function renderFormWorkers(){document.getElementById('pt-workers').innerHTML=formWorkers.map(n=>`<span class="ptag worker">${n}<span class="ptag-x" onclick="removeWorker('${n}')">✕</span></span>`).join('');}
-
 function editSelectPrint(v){editPrint=v;document.querySelectorAll('[id^="ept-"]').forEach(b=>b.classList.remove('active-screen','active-dtf','active-none'));document.getElementById(v==='screen'?'ept-screen':v==='dtf'?'ept-dtf':'ept-none').classList.add(v==='screen'?'active-screen':v==='dtf'?'active-dtf':'active-none');previewChanges();}
 function editSelectSale(v){editSaleBy=v;document.querySelectorAll('[id^="esb-"]').forEach(b=>b.classList.remove('active'));const m={"Sridevi":"esb-sridevi","Anu Prasad":"esb-anuprasad","Esha":"esb-esha","Other":"esb-other"};if(m[v])document.getElementById(m[v]).classList.add('active');document.getElementById('ef-sale-other').style.display=v==='Other'?'block':'none';previewChanges();}
 function editAddWorker(){const inp=document.getElementById('epi-worker');const v=inp.value.trim();if(!v||editWorkers.includes(v))return;editWorkers.push(v);inp.value='';renderEditWorkers();}
@@ -704,8 +714,8 @@ function buildCard(o){
   const div=document.createElement('div');div.className=`card ${o.status}`;
   const bm={delayed:'badge-delayed',urgent:'badge-urgent',ok:'badge-ok'};
   const bt={delayed:'DELAYED',urgent:'URGENT',ok:'ON TRACK'};
-  const nxt=STAGES[STAGES.indexOf(o.stage)+1];
-  const prevIdx=STAGES.indexOf(o.stage)-1;
+  const nxt=getNextStage(o.stage,o.print);
+  const prevStage=getPrevStage(o.stage,o.print);
   const tl=o.timeline||[];const tlShow=tl.slice(-3);
   const tlHTML=tl.length?`<div class="card-timeline"><div class="card-timeline-title">📅 History</div>${tlShow.map(t=>{const sc=STAGE_COLORS[t.stage]||{dot:'#9CA3AF'};const isEdit=t.type==='edit';const isDel=t.type==='deleted';return`<div class="tl-entry"><span class="tl-dot" style="background:${isDel?'#C0392B':isEdit?'#E65100':t.back?'#C0392B':sc.dot}"></span><span>${isDel?'🗑 Deleted':isEdit?'✏️ Edited':(`<strong>${t.stage}</strong>${t.back?' ↩':''}`)} — ${t.date}</span></div>`;}).join('')}${tl.length>3?`<div style="font-size:10px;color:rgba(44,31,20,0.35);margin-top:2px">+${tl.length-3} more — open detail</div>`:''}</div>`:'';
   const hasPeople=o.saleBy||(o.workers&&o.workers.length);
@@ -718,11 +728,12 @@ function buildCard(o){
       ${printChipHTML(o.print)}
       ${o.edited?'<span class="card-edited-badge">✏️ Edited</span>':''}
     </div>
+    ${o.cuttingDate?`<div style="margin-top:5px;font-size:10px;color:rgba(44,31,20,0.5);font-family:'DM Mono',monospace">✂️ Cutting: ${o.cuttingDate}</div>`:''}
     ${hasPeople?`<div class="people-chips">${o.saleBy?`<span class="avatar-chip sale">🏷 ${o.saleBy}</span>`:''}${(o.workers||[]).map(n=>`<span class="avatar-chip worker">🔧 ${n}</span>`).join('')}</div>`:''}
     ${tlHTML}
     <div class="card-actions">
-      ${o.stage!=='Done'?`<button class="btn-stage" onclick="quickAdvance(${o.id},event)">✓ ${nxt||'Done'}</button>`:''}
-      <button class="btn-stage-back" onclick="quickBack(${o.id},event)" ${prevIdx<0?'disabled':''}>← Back</button>
+      ${o.stage!=='Done'&&nxt?`<button class="btn-stage" onclick="quickAdvance(${o.id},event)">✓ ${nxt}</button>`:''}
+      <button class="btn-stage-back" onclick="quickBack(${o.id},event)" ${!prevStage?'disabled':''}>← Back</button>
       <button class="btn-edit-card" onclick="openEditFromCard(${o.id},event)">✏️</button>
       <button class="btn-detail" onclick="openDetail(${o.id},event)">Detail</button>
       <button class="btn-remove-card" onclick="quickRemove(${o.id},event)">🗑</button>
@@ -733,19 +744,22 @@ function buildCard(o){
 function renderList(){
   const tbody=document.getElementById('list-body');tbody.innerHTML='';
   filteredOrders().forEach((o,i)=>{
-    const sc=STAGE_COLORS[o.stage]||{};const nxt=STAGES[STAGES.indexOf(o.stage)+1];
+    const sc=STAGE_COLORS[o.stage]||{};const nxt=getNextStage(o.stage,o.print);
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td style="color:rgba(44,31,20,0.4);font-size:11px">${i+1}</td><td><strong>${o.client}</strong></td><td style="color:rgba(44,31,20,0.6)">${o.product}</td>
+    tr.innerHTML=`<td style="color:rgba(44,31,20,0.4);font-size:11px">${i+1}</td>
+      <td><strong>${o.client}</strong></td>
+      <td style="color:rgba(44,31,20,0.6)">${o.product}</td>
       <td>${printChipHTML(o.print)||'<span style="color:rgba(44,31,20,0.3);font-size:12px">—</span>'}</td>
       <td style="font-family:'DM Mono',monospace;font-weight:600">${o.qty||'—'}</td>
       <td style="font-family:'DM Mono',monospace">${fmtDate(o.date)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px">${o.cuttingDate||'<span style="color:rgba(44,31,20,0.3)">—</span>'}</td>
       <td>${o.saleBy?`<span class="avatar-chip sale">🏷 ${o.saleBy}</span>`:'<span style="color:rgba(44,31,20,0.3);font-size:12px">—</span>'}</td>
       <td>${(o.workers||[]).length?(o.workers||[]).map(n=>`<span class="avatar-chip worker" style="display:inline-block;margin:1px">🔧 ${n}</span>`).join(''):'<span style="color:rgba(44,31,20,0.3);font-size:12px">—</span>'}</td>
       <td><span class="stage-pill" style="background:${sc.bg};color:${sc.text}">${o.stage}</span></td>
       <td><span class="stage-pill" style="background:${o.status==='delayed'?'#FAE9E7':o.status==='urgent'?'#FEF3C7':'#EAF4EC'};color:${o.status==='delayed'?'#C0392B':o.status==='urgent'?'#92400E':'#166534'}">${o.status.toUpperCase()}</span></td>
       <td>${o.edited?'<span class="card-edited-badge">✏️ Edited</span>':'<span style="color:rgba(44,31,20,0.3);font-size:12px">—</span>'}</td>
       <td style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
-        ${o.stage!=='Done'?`<button class="btn-stage" style="width:auto;padding:5px 8px;font-size:11px" onclick="quickAdvance(${o.id},event)">→ ${nxt||'Done'}</button>`:'<span style="color:#9CA3AF;font-size:12px">✓</span>'}
+        ${o.stage!=='Done'&&nxt?`<button class="btn-stage" style="width:auto;padding:5px 8px;font-size:11px" onclick="quickAdvance(${o.id},event)">→ ${nxt}</button>`:'<span style="color:#9CA3AF;font-size:12px">✓</span>'}
         <button class="btn-edit-card" onclick="openEditFromCard(${o.id},event)">✏️</button>
         <button class="btn-remove-card" onclick="quickRemove(${o.id},event)">🗑</button>
       </td>`;
@@ -765,8 +779,11 @@ function updateKPIs(){
 async function quickAdvance(id,e){
   if(e)e.stopPropagation();
   const prev=snapshot();const o=orders.find(x=>x.id===id);if(!o)return;
-  const idx=STAGES.indexOf(o.stage);if(idx>=STAGES.length-1)return;
-  pushUndo(prev);o.stage=STAGES[idx+1];
+  const next=getNextStage(o.stage,o.print);if(!next)return;
+  pushUndo(prev);
+  o.stage=next;
+  // Auto-capture cutting date when entering Cutting stage
+  if(next==='Cutting'&&!o.cuttingDate)o.cuttingDate=nowLabel();
   const tlEntry={type:"stage",stage:o.stage,date:nowLabel(),back:false,note:''};
   o.timeline.push(tlEntry);if(o.stage==='Done')o.status='ok';
   render();renderDayPanel();showToast(`✓ "${o.client}" → ${o.stage}`);
@@ -777,10 +794,10 @@ async function quickAdvance(id,e){
 function quickBack(id,e){
   if(e)e.stopPropagation();
   const o=orders.find(x=>x.id===id);if(!o)return;
-  const idx=STAGES.indexOf(o.stage);if(idx<=0)return;
+  const prev=getPrevStage(o.stage,o.print);if(!prev)return;
   currentOrderId=id;pendingBackId=id;
   document.getElementById('back-modal-sub').textContent=`"${o.client}"`;
-  document.getElementById('back-modal-text').textContent=`Moving "${o.stage}" → "${STAGES[idx-1]}". Why?`;
+  document.getElementById('back-modal-text').textContent=`Moving "${o.stage}" → "${prev}". Why?`;
   document.getElementById('back-reason-input').value='';
   document.getElementById('back-reason-err').style.display='none';
   document.getElementById('back-modal').classList.add('open');
@@ -790,8 +807,8 @@ async function executeBack(){
   const reason=document.getElementById('back-reason-input').value.trim();
   if(!reason){document.getElementById('back-reason-err').style.display='block';return;}
   const prev=snapshot();const o=orders.find(x=>x.id===pendingBackId);if(!o)return;
-  const idx=STAGES.indexOf(o.stage);if(idx<=0)return;
-  pushUndo(prev);o.stage=STAGES[idx-1];
+  const prevStage=getPrevStage(o.stage,o.print);if(!prevStage)return;
+  pushUndo(prev);o.stage=prevStage;
   const tlEntry={type:"stage",stage:o.stage,date:nowLabel(),back:true,note:reason};
   o.timeline.push(tlEntry);
   closeModal('back-modal');
@@ -825,6 +842,7 @@ function openDetail(id,e){
   document.getElementById('m-product').textContent=o.product;
   document.getElementById('m-qty').textContent=`${o.qty||'—'} pcs`;
   document.getElementById('m-entry-date').textContent=o.entryDate||'—';
+  document.getElementById('m-cutting-date').textContent=o.cuttingDate||'Not started yet';
   document.getElementById('m-date').textContent=fmtDate(o.date);
   document.getElementById('m-time').textContent=o.time||'—';
   document.getElementById('m-print').textContent=o.print==='screen'?'🖨 Screen Print':o.print==='dtf'?'🎨 DTF':'None';
@@ -855,9 +873,10 @@ function openDetail(id,e){
   const prog=document.getElementById('m-stage-progress');prog.innerHTML='';
   const ci=STAGES.indexOf(o.stage);
   STAGES.forEach((s,i)=>prog.innerHTML+=`<div class="stage-step ${i<ci?'done':i===ci?'current':'pending'}">${s}</div>`);
-  const nxt=STAGES[ci+1];const btn=document.getElementById('btn-advance-stage');
-  if(o.stage==='Done'){btn.textContent='✓ Order Complete';btn.disabled=true;}else{btn.textContent=`✓ Mark Done → Move to ${nxt}`;btn.disabled=false;}
-  const bBtn=document.getElementById('btn-back-stage');bBtn.disabled=ci<=0;bBtn.textContent=ci>0?`← Move Back to ${STAGES[ci-1]}`:'← Move Stage Back';
+  const nxt=getNextStage(o.stage,o.print);const btn=document.getElementById('btn-advance-stage');
+  if(o.stage==='Done'){btn.textContent='✓ Order Complete';btn.disabled=true;}else if(nxt){btn.textContent=`✓ Mark Done → Move to ${nxt}`;btn.disabled=false;}else{btn.textContent='✓ Mark Done';btn.disabled=false;}
+  const prevStage=getPrevStage(o.stage,o.print);const bBtn=document.getElementById('btn-back-stage');
+  bBtn.disabled=!prevStage;bBtn.textContent=prevStage?`← Move Back to ${prevStage}`:'← Move Stage Back';
   document.getElementById('detail-modal').classList.add('open');
 }
 async function advanceStage(){const o=orders.find(x=>x.id===currentOrderId);if(!o)return;const nv=document.getElementById('m-notes-input').value.trim();if(nv)o.remarks=(o.remarks?o.remarks+' | ':'')+nv;closeModal('detail-modal');await quickAdvance(o.id,null);}
@@ -872,17 +891,20 @@ function openEditModal(){
   document.getElementById('ef-date').value=isValidISO(o.date)?o.date:'';
   document.getElementById('ef-notes').value=(o.time&&o.time!=='—')?o.time:'';
   document.getElementById('ef-priority').value=o.status;
-  // Pre-fill entry date if it's a valid date string — strip time portion if needed
-  const existingEntry=o.entryDate?o.entryDate.split(',')[0].trim():'';
-  // Try to convert "21 Apr 2026" → "2026-04-21" for the date input
-  const entryISO=parseEntryDateToISO(existingEntry);
-  document.getElementById('ef-entry-date').value=entryISO||'';
   document.getElementById('ef-reason').value='';
   document.getElementById('edit-change-log').classList.remove('visible');
   document.getElementById('edit-change-list').innerHTML='';
+  // Entry date
+  const entryISO=parseEntryDateToISO((o.entryDate||'').split(',')[0].trim());
+  document.getElementById('ef-entry-date').value=entryISO||'';
+  // Cutting date
+  const cuttingISO=parseEntryDateToISO((o.cuttingDate||'').split(',')[0].trim());
+  document.getElementById('ef-cutting-date').value=cuttingISO||'';
+  // Print
   editPrint=o.print||'none';
   document.querySelectorAll('[id^="ept-"]').forEach(b=>b.classList.remove('active-screen','active-dtf','active-none'));
   document.getElementById(editPrint==='screen'?'ept-screen':editPrint==='dtf'?'ept-dtf':'ept-none').classList.add(editPrint==='screen'?'active-screen':editPrint==='dtf'?'active-dtf':'active-none');
+  // Sale by
   const knownSales=["Sridevi","Anu Prasad","Esha"];
   const saleMap={"Sridevi":"esb-sridevi","Anu Prasad":"esb-anuprasad","Esha":"esb-esha"};
   document.querySelectorAll('[id^="esb-"]').forEach(b=>b.classList.remove('active'));
@@ -894,20 +916,11 @@ function openEditModal(){
   document.getElementById('edit-modal').classList.add('open');
 }
 
-function parseEntryDateToISO(str){
-  if(!str)return'';
-  // Already ISO
-  if(/^\d{4}-\d{2}-\d{2}$/.test(str))return str;
-  // "21 Apr 2026" format
-  const mo={'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'};
-  const m=str.match(/(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/);
-  if(m)return`${m[3]}-${mo[m[2]]||'01'}-${m[1].padStart(2,'0')}`;
-  return'';
-}
-
 function previewChanges(){
   const o=orders.find(x=>x.id===currentOrderId);if(!o)return;
   const curSaleBy=editSaleBy==='Other'?(document.getElementById('ef-sale-other').value.trim()||'Other'):editSaleBy;
+  const newEntryISO=document.getElementById('ef-entry-date').value;
+  const newCuttingISO=document.getElementById('ef-cutting-date').value;
   const fields=[
     {f:'Client',old:o.client,nv:document.getElementById('ef-client').value.trim()},
     {f:'Product',old:o.product,nv:document.getElementById('ef-product').value.trim()},
@@ -918,6 +931,8 @@ function previewChanges(){
     {f:'Print',old:o.print||'none',nv:editPrint},
     {f:'Sale By',old:o.saleBy||'—',nv:curSaleBy||'—'},
     {f:'Workers',old:(o.workers||[]).join(', ')||'—',nv:editWorkers.join(', ')||'—'},
+    ...(newEntryISO?[{f:'Entry Date',old:o.entryDate||'—',nv:fmtDate(newEntryISO)+' (manually set)'}]:[]),
+    ...(newCuttingISO?[{f:'Cutting Date',old:o.cuttingDate||'—',nv:fmtDate(newCuttingISO)+' (manually set)'}]:[]),
   ];
   const changes=fields.filter(x=>x.old!==x.nv);
   const log=document.getElementById('edit-change-log');const list=document.getElementById('edit-change-list');
@@ -936,9 +951,10 @@ async function saveEdit(){
   const newDate=document.getElementById('ef-date').value||o.date;
   const newTime=document.getElementById('ef-notes').value.trim()||'—';
   const newStatus=document.getElementById('ef-priority').value;
-  // Entry date — if user picked a new date convert to readable label, else keep existing
   const newEntryISO=document.getElementById('ef-entry-date').value;
-  const newEntryDate=newEntryISO?fmtDate(newEntryISO)+' (manually set)':(o.entryDate||'');
+  const newCuttingISO=document.getElementById('ef-cutting-date').value;
+  const newEntryDate=newEntryISO?fmtDate(newEntryISO)+' (manually set)':o.entryDate||'';
+  const newCuttingDate=newCuttingISO?fmtDate(newCuttingISO)+' (manually set)':o.cuttingDate||'';
   const changes=[];
   if(o.client!==newClient)changes.push({field:'Client',old:o.client,new:newClient});
   if(o.product!==newProduct)changes.push({field:'Product',old:o.product,new:newProduct});
@@ -951,17 +967,19 @@ async function saveEdit(){
   const oldW=(o.workers||[]).join(', ');const newW=editWorkers.join(', ');
   if(oldW!==newW)changes.push({field:'Workers',old:oldW||'—',new:newW||'—'});
   if(newEntryISO&&newEntryDate!==o.entryDate)changes.push({field:'Entry Date',old:o.entryDate||'—',new:newEntryDate});
+  if(newCuttingISO&&newCuttingDate!==o.cuttingDate)changes.push({field:'Cutting Date',old:o.cuttingDate||'—',new:newCuttingDate});
   if(!changes.length){showToast('No changes detected');closeModal('edit-modal');return;}
   const prev=snapshot();pushUndo(prev);
   o.client=newClient;o.product=newProduct;o.qty=newQty;o.date=newDate;o.time=newTime;
   o.status=newStatus;o.print=editPrint;o.saleBy=newSaleBy;o.workers=[...editWorkers];o.edited=true;
   if(newEntryISO)o.entryDate=newEntryDate;
+  if(newCuttingISO)o.cuttingDate=newCuttingDate;
   const tlEntry={type:'edit',stage:o.stage,date:nowLabel(),back:false,note:reason,changes};
   o.timeline.push(tlEntry);
   closeModal('edit-modal');
   if(document.getElementById('detail-modal').classList.contains('open'))openDetail(o.id,null);
   showToast(`✏️ "${o.client}" updated`);render();renderDayPanel();
-  await sheetPost({action:'updateOrder',...o,workers:o.workers,edited:true,entryDate:o.entryDate||''});
+  await sheetPost({action:'updateOrder',...o,workers:o.workers,edited:true,entryDate:o.entryDate,cuttingDate:o.cuttingDate});
   await sheetPost({action:'addTimeline',orderId:o.id,client:o.client,...tlEntry,changes:JSON.stringify(changes)});
 }
 
@@ -969,6 +987,7 @@ function openAddModal(){
   selectedPrint='none';selectPrint('none');selectedSaleBy='';
   document.querySelectorAll('#add-modal .sale-by-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('f-sale-other').style.display='none';
+  document.getElementById('f-entry-date').value='';
   formWorkers=[];renderFormWorkers();
   document.getElementById('add-modal').classList.add('open');
 }
@@ -976,17 +995,16 @@ async function addOrder(){
   const client=document.getElementById('f-client').value.trim();if(!client){showToast('⚠️ Client name required');return;}
   const saleBy=selectedSaleBy==='Other'?(document.getElementById('f-sale-other').value.trim()||'Other'):selectedSaleBy;
   const stg=document.getElementById('f-stage').value;
-  // Use manual entry date if provided, else auto-capture now
   const manualEntry=document.getElementById('f-entry-date').value;
   const entryDate=manualEntry?fmtDate(manualEntry)+' (entered manually)':nowLabel();
-  const newOrder={id:nextId++,client,product:document.getElementById('f-product').value||'—',qty:parseInt(document.getElementById('f-qty').value)||0,date:document.getElementById('f-date').value||'',time:document.getElementById('f-notes').value||'—',stage:stg,status:document.getElementById('f-priority').value,print:selectedPrint,saleBy,workers:[...formWorkers],remarks:'',edited:false,entryDate,timeline:[{type:'stage',stage:stg,date:entryDate,back:false,note:'Order created'}]};
+  const newOrder={id:nextId++,client,product:document.getElementById('f-product').value||'—',qty:parseInt(document.getElementById('f-qty').value)||0,date:document.getElementById('f-date').value||'',time:document.getElementById('f-notes').value||'—',stage:stg,status:document.getElementById('f-priority').value,print:selectedPrint,saleBy,workers:[...formWorkers],remarks:'',edited:false,entryDate,cuttingDate:'',timeline:[{type:'stage',stage:stg,date:entryDate,back:false,note:'Order created'}]};
   orders.unshift(newOrder);
   closeModal('add-modal');showToast('✓ Order added — saving to Sheets…');render();renderDayPanel();
   ['f-client','f-product','f-qty','f-date','f-notes','f-entry-date'].forEach(id=>document.getElementById(id).value='');
   formWorkers=[];selectPrint('none');selectedSaleBy='';
   document.querySelectorAll('#add-modal .sale-by-btn').forEach(b=>b.classList.remove('active'));
-  await sheetPost({action:'addOrder',...newOrder,workers:newOrder.workers});
-  await sheetPost({action:'addTimeline',orderId:newOrder.id,client:newOrder.client,stage:stg,timestamp:nowLabel(),type:'stage',back:false,note:'Order created',changes:''});
+  await sheetPost({action:'addOrder',...newOrder,workers:newOrder.workers,entryDate:newOrder.entryDate,cuttingDate:''});
+  await sheetPost({action:'addTimeline',orderId:newOrder.id,client:newOrder.client,stage:stg,timestamp:entryDate,type:'stage',back:false,note:'Order created',changes:''});
 }
 
 function closeModal(id){
@@ -997,7 +1015,6 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
   el.addEventListener('click',e=>{if(e.target===el){const id=el.id;el.classList.remove('open');if(id==='edit-modal'){document.getElementById('edit-change-log').classList.remove('visible');document.getElementById('edit-change-list').innerHTML='';}}});
 });
 document.getElementById('epi-worker').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();editAddWorker();}});
-
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
 
 initApp();
