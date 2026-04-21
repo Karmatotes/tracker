@@ -346,6 +346,7 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
     <div class="modal-body">
       <div class="stage-progress" id="m-stage-progress"></div>
       <div class="modal-row"><label>Quantity</label><div class="val" id="m-qty">—</div></div>
+      <div class="modal-row"><label>Entry Date</label><div class="val" id="m-entry-date">—</div></div>
       <div class="modal-row"><label>Delivery</label><div class="val" id="m-date">—</div></div>
       <div class="modal-row"><label>Time</label><div class="val" id="m-time">—</div></div>
       <div class="modal-row"><label>Print Type</label><div class="val" id="m-print">—</div></div>
@@ -392,6 +393,11 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
             <option value="ok">Normal</option><option value="urgent">Urgent</option><option value="delayed">Delayed</option>
           </select>
         </div>
+      </div>
+      <div class="form-group">
+        <label>Order Start / Entry Date</label>
+        <input class="form-control" id="ef-entry-date" type="date" oninput="previewChanges()">
+        <div style="font-size:11px;color:rgba(44,31,20,0.4);margin-top:4px">Leave blank to keep existing. For new orders this is auto-captured.</div>
       </div>
       <div class="edit-section-label">🖨 Print Type</div>
       <div class="print-type-wrap" style="margin-bottom:14px">
@@ -486,6 +492,11 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
             <option value="Packing & Del">Packing & Del</option>
           </select>
         </div>
+      </div>
+      <div class="form-group">
+        <label>Order Start / Entry Date</label>
+        <input class="form-control" id="f-entry-date" type="date">
+        <div style="font-size:11px;color:rgba(44,31,20,0.4);margin-top:4px">Leave blank to auto-capture today's date & time.</div>
       </div>
       <div class="form-group"><label>Print Type</label>
         <div class="print-type-wrap">
@@ -594,7 +605,9 @@ async function initApp(){
       stage:row['Stage']||'Cutting',status:row['Status']||'ok',print:row['Print']||'none',
       saleBy:row['Sale By']||'',
       workers:Array.isArray(row['Workers'])?row['Workers']:(row['Workers']?String(row['Workers']).split('|').map(w=>w.trim()).filter(Boolean):[]),
-      remarks:row['Remarks']||'',edited:row['Edited']===true||row['Edited']==='TRUE',timeline:[]
+      remarks:row['Remarks']||'',edited:row['Edited']===true||row['Edited']==='TRUE',
+      entryDate:row['Created At']||'',
+      timeline:[]
     }));
     if(data.timeline&&data.timeline.length){
       data.timeline.forEach(t=>{
@@ -811,6 +824,7 @@ function openDetail(id,e){
   document.getElementById('m-client').textContent=o.client;
   document.getElementById('m-product').textContent=o.product;
   document.getElementById('m-qty').textContent=`${o.qty||'—'} pcs`;
+  document.getElementById('m-entry-date').textContent=o.entryDate||'—';
   document.getElementById('m-date').textContent=fmtDate(o.date);
   document.getElementById('m-time').textContent=o.time||'—';
   document.getElementById('m-print').textContent=o.print==='screen'?'🖨 Screen Print':o.print==='dtf'?'🎨 DTF':'None';
@@ -858,6 +872,11 @@ function openEditModal(){
   document.getElementById('ef-date').value=isValidISO(o.date)?o.date:'';
   document.getElementById('ef-notes').value=(o.time&&o.time!=='—')?o.time:'';
   document.getElementById('ef-priority').value=o.status;
+  // Pre-fill entry date if it's a valid date string — strip time portion if needed
+  const existingEntry=o.entryDate?o.entryDate.split(',')[0].trim():'';
+  // Try to convert "21 Apr 2026" → "2026-04-21" for the date input
+  const entryISO=parseEntryDateToISO(existingEntry);
+  document.getElementById('ef-entry-date').value=entryISO||'';
   document.getElementById('ef-reason').value='';
   document.getElementById('edit-change-log').classList.remove('visible');
   document.getElementById('edit-change-list').innerHTML='';
@@ -873,6 +892,17 @@ function openEditModal(){
   else editSaleBy='';
   editWorkers=[...(o.workers||[])];renderEditWorkers();
   document.getElementById('edit-modal').classList.add('open');
+}
+
+function parseEntryDateToISO(str){
+  if(!str)return'';
+  // Already ISO
+  if(/^\d{4}-\d{2}-\d{2}$/.test(str))return str;
+  // "21 Apr 2026" format
+  const mo={'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06','Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'};
+  const m=str.match(/(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/);
+  if(m)return`${m[3]}-${mo[m[2]]||'01'}-${m[1].padStart(2,'0')}`;
+  return'';
 }
 
 function previewChanges(){
@@ -906,6 +936,9 @@ async function saveEdit(){
   const newDate=document.getElementById('ef-date').value||o.date;
   const newTime=document.getElementById('ef-notes').value.trim()||'—';
   const newStatus=document.getElementById('ef-priority').value;
+  // Entry date — if user picked a new date convert to readable label, else keep existing
+  const newEntryISO=document.getElementById('ef-entry-date').value;
+  const newEntryDate=newEntryISO?fmtDate(newEntryISO)+' (manually set)':(o.entryDate||'');
   const changes=[];
   if(o.client!==newClient)changes.push({field:'Client',old:o.client,new:newClient});
   if(o.product!==newProduct)changes.push({field:'Product',old:o.product,new:newProduct});
@@ -917,16 +950,18 @@ async function saveEdit(){
   if((o.saleBy||'—')!==(newSaleBy||'—'))changes.push({field:'Sale By',old:o.saleBy||'—',new:newSaleBy||'—'});
   const oldW=(o.workers||[]).join(', ');const newW=editWorkers.join(', ');
   if(oldW!==newW)changes.push({field:'Workers',old:oldW||'—',new:newW||'—'});
+  if(newEntryISO&&newEntryDate!==o.entryDate)changes.push({field:'Entry Date',old:o.entryDate||'—',new:newEntryDate});
   if(!changes.length){showToast('No changes detected');closeModal('edit-modal');return;}
   const prev=snapshot();pushUndo(prev);
   o.client=newClient;o.product=newProduct;o.qty=newQty;o.date=newDate;o.time=newTime;
   o.status=newStatus;o.print=editPrint;o.saleBy=newSaleBy;o.workers=[...editWorkers];o.edited=true;
+  if(newEntryISO)o.entryDate=newEntryDate;
   const tlEntry={type:'edit',stage:o.stage,date:nowLabel(),back:false,note:reason,changes};
   o.timeline.push(tlEntry);
   closeModal('edit-modal');
   if(document.getElementById('detail-modal').classList.contains('open'))openDetail(o.id,null);
   showToast(`✏️ "${o.client}" updated`);render();renderDayPanel();
-  await sheetPost({action:'updateOrder',...o,workers:o.workers,edited:true});
+  await sheetPost({action:'updateOrder',...o,workers:o.workers,edited:true,entryDate:o.entryDate||''});
   await sheetPost({action:'addTimeline',orderId:o.id,client:o.client,...tlEntry,changes:JSON.stringify(changes)});
 }
 
@@ -941,10 +976,13 @@ async function addOrder(){
   const client=document.getElementById('f-client').value.trim();if(!client){showToast('⚠️ Client name required');return;}
   const saleBy=selectedSaleBy==='Other'?(document.getElementById('f-sale-other').value.trim()||'Other'):selectedSaleBy;
   const stg=document.getElementById('f-stage').value;
-  const newOrder={id:nextId++,client,product:document.getElementById('f-product').value||'—',qty:parseInt(document.getElementById('f-qty').value)||0,date:document.getElementById('f-date').value||'',time:document.getElementById('f-notes').value||'—',stage:stg,status:document.getElementById('f-priority').value,print:selectedPrint,saleBy,workers:[...formWorkers],remarks:'',edited:false,timeline:[{type:'stage',stage:stg,date:nowLabel(),back:false,note:'Order created'}]};
+  // Use manual entry date if provided, else auto-capture now
+  const manualEntry=document.getElementById('f-entry-date').value;
+  const entryDate=manualEntry?fmtDate(manualEntry)+' (entered manually)':nowLabel();
+  const newOrder={id:nextId++,client,product:document.getElementById('f-product').value||'—',qty:parseInt(document.getElementById('f-qty').value)||0,date:document.getElementById('f-date').value||'',time:document.getElementById('f-notes').value||'—',stage:stg,status:document.getElementById('f-priority').value,print:selectedPrint,saleBy,workers:[...formWorkers],remarks:'',edited:false,entryDate,timeline:[{type:'stage',stage:stg,date:entryDate,back:false,note:'Order created'}]};
   orders.unshift(newOrder);
   closeModal('add-modal');showToast('✓ Order added — saving to Sheets…');render();renderDayPanel();
-  ['f-client','f-product','f-qty','f-date','f-notes'].forEach(id=>document.getElementById(id).value='');
+  ['f-client','f-product','f-qty','f-date','f-notes','f-entry-date'].forEach(id=>document.getElementById(id).value='');
   formWorkers=[];selectPrint('none');selectedSaleBy='';
   document.querySelectorAll('#add-modal .sale-by-btn').forEach(b=>b.classList.remove('active'));
   await sheetPost({action:'addOrder',...newOrder,workers:newOrder.workers});
