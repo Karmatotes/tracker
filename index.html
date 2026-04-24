@@ -267,7 +267,7 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
       <button class="btn-ur" id="btn-redo" onclick="doRedo()" disabled>↪ Redo</button>
     </div>
     <div class="date-badge" id="live-date"></div>
-    <a href="https://karmatotes.github.io/orders/" target="_blank" style="background:var(--moss);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none">＋ New Order</a>
+    <button class="btn-add" onclick="openAddModal()">＋ New Order</button>
   </div>
 </header>
 
@@ -333,10 +333,6 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
       <div class="modal-row"><label>Quantity</label><div class="val" id="m-qty">—</div></div>
       <div class="modal-row"><label>Entry Date</label><div class="val" id="m-entry-date">—</div></div>
       <div class="modal-row"><label>Cutting Started</label><div class="val" id="m-cutting-date">—</div></div>
-      <div class="modal-row" id="m-material-row" style="display:none"><label>Material</label><div class="val" id="m-material">—</div></div>
-      <div class="modal-row" id="m-dimensions-row" style="display:none"><label>Dimensions</label><div class="val" id="m-dimensions">—</div></div>
-      <div class="modal-row" id="m-color-row" style="display:none"><label>Color</label><div class="val" id="m-color">—</div></div>
-      <div class="modal-row" id="m-features-row" style="display:none"><label>Features</label><div class="val" id="m-features">—</div></div>
       <div class="modal-row"><label>Delivery</label><div class="val" id="m-date">—</div></div>
       <div class="modal-row"><label>Time</label><div class="val" id="m-time">—</div></div>
       <div class="modal-row"><label>Print Type</label><div class="val" id="m-print">—</div></div>
@@ -464,6 +460,70 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
   </div>
 </div>
 
+<!-- ADD ORDER MODAL -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title">New Order</div><div class="modal-sub">Saved instantly to Google Sheets</div></div>
+      <button class="modal-close" onclick="closeModal('add-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>Client / Order Name</label><input class="form-control" id="f-client" placeholder="e.g. Unity College"></div>
+      <div class="form-group"><label>Product Type</label><input class="form-control" id="f-product" placeholder="e.g. Jute tote bags"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Quantity</label><input class="form-control" id="f-qty" type="number" placeholder="150"></div>
+        <div class="form-group"><label>Delivery Date</label><input class="form-control" id="f-date" type="date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Time / Notes</label><input class="form-control" id="f-notes" placeholder="By 5 PM"></div>
+        <div class="form-group"><label>Starting Stage</label>
+          <select class="form-control" id="f-stage">
+            <option value="Cutting">Cutting</option><option value="Printing">Printing</option>
+            <option value="Stitching">Stitching</option><option value="Finishing">Finishing</option>
+            <option value="Packing & Del">Packing & Del</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Order Start / Entry Date</label>
+        <input class="form-control" id="f-entry-date" type="date">
+        <div style="font-size:11px;color:rgba(44,31,20,0.4);margin-top:4px">Leave blank to auto-capture today's date & time.</div>
+      </div>
+      <div class="form-group"><label>Print Type</label>
+        <div class="print-type-wrap">
+          <div class="print-type-btn active-none" id="pt-none" onclick="selectPrint('none')">🚫 None</div>
+          <div class="print-type-btn" id="pt-screen" onclick="selectPrint('screen')">🖨 Screen</div>
+          <div class="print-type-btn" id="pt-dtf" onclick="selectPrint('dtf')">🎨 DTF</div>
+        </div>
+      </div>
+      <div class="form-group"><label>Sale By</label>
+        <div class="sale-by-grid">
+          <div class="sale-by-btn" id="sb-sridevi"   onclick="selectSaleBy('Sridevi')">Sridevi</div>
+          <div class="sale-by-btn" id="sb-anuprasad" onclick="selectSaleBy('Anu Prasad')">Anu Prasad</div>
+          <div class="sale-by-btn" id="sb-esha"      onclick="selectSaleBy('Esha')">Esha</div>
+          <div class="sale-by-btn" id="sb-other"     onclick="selectSaleBy('Other')">Other…</div>
+        </div>
+        <input class="form-control" id="f-sale-other" placeholder="Enter name…" style="display:none;margin-top:4px">
+      </div>
+      <div class="form-group"><label>Workers</label>
+        <div class="people-builder">
+          <div class="person-input-row">
+            <label>Worker</label>
+            <input class="person-input" id="pi-worker" placeholder="Name…" onkeydown="if(event.key==='Enter'){event.preventDefault();addWorker()}">
+            <button class="btn-add-person" onclick="addWorker()">＋</button>
+          </div>
+          <div class="person-tags-wrap" id="pt-workers"></div>
+        </div>
+      </div>
+      <div class="form-group"><label>Priority</label>
+        <select class="form-control" id="f-priority">
+          <option value="ok">Normal</option><option value="urgent">Urgent</option><option value="delayed">Delayed</option>
+        </select>
+      </div>
+      <button class="btn-advance" onclick="addOrder()">＋ Add to Tracker</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -475,7 +535,7 @@ const STATUS_DOT={delayed:"#C0392B",urgent:"#D4A96A",ok:"#3B6B45"};
 const COL_CLASS={"Cutting":"col-cutting","Printing":"col-printing","Stitching":"col-stitching","Finishing":"col-finishing","Packing & Del":"col-packing","Done":"col-done"};
 
 let orders=[],nextId=1,activeFilter='all',searchTerm='',currentOrderId=null;
-let customDateFilter='';
+let selectedPrint='none',selectedSaleBy='',customDateFilter='',formWorkers=[];
 let editPrint='none',editSaleBy='',editWorkers=[];
 let undoStack=[],redoStack=[],pendingBackId=null;
 
@@ -566,6 +626,7 @@ async function sheetPost(body){
 }
 
 async function initApp(){
+  await sheetCall({action:'initSheets'});
   const data=await sheetCall({action:'getAll'});
   document.getElementById('loading-overlay').classList.add('hidden');
   if(data&&data.orders&&data.orders.length>0){
@@ -585,12 +646,6 @@ async function initApp(){
       edited:row['Edited']===true||row['Edited']==='TRUE',
       entryDate:cleanSheetValue(row['Created At'])||'',
       cuttingDate:cleanSheetValue(row['Cutting Date'])||'',
-      primaryMaterial:String(row['Primary Material']||''),
-      secondaryMaterial:String(row['Secondary Material']||''),
-      dimensions:String(row['Dimensions']||''),
-      color:String(row['Color']||''),
-      features:String(row['Features']||''),
-      orderValue:Number(row['Order Value'])||0,
       timeline:[]
     })).filter(o=>o.client&&o.client.trim()!=='');
     if(data.timeline&&data.timeline.length){
@@ -630,6 +685,11 @@ function syncUR(){document.getElementById('btn-undo').disabled=!undoStack.length
 
 document.getElementById('live-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 
+function selectPrint(v){selectedPrint=v;document.querySelectorAll('#add-modal .print-type-btn').forEach(b=>b.classList.remove('active-screen','active-dtf','active-none'));document.getElementById(v==='screen'?'pt-screen':v==='dtf'?'pt-dtf':'pt-none').classList.add(v==='screen'?'active-screen':v==='dtf'?'active-dtf':'active-none');}
+function selectSaleBy(v){selectedSaleBy=v;document.querySelectorAll('#add-modal .sale-by-btn').forEach(b=>b.classList.remove('active'));const m={"Sridevi":"sb-sridevi","Anu Prasad":"sb-anuprasad","Esha":"sb-esha","Other":"sb-other"};if(m[v])document.getElementById(m[v]).classList.add('active');document.getElementById('f-sale-other').style.display=v==='Other'?'block':'none';}
+function addWorker(){const inp=document.getElementById('pi-worker');const v=inp.value.trim();if(!v||formWorkers.includes(v))return;formWorkers.push(v);inp.value='';renderFormWorkers();}
+function removeWorker(n){formWorkers=formWorkers.filter(x=>x!==n);renderFormWorkers();}
+function renderFormWorkers(){document.getElementById('pt-workers').innerHTML=formWorkers.map(n=>`<span class="ptag worker">${n}<span class="ptag-x" onclick="removeWorker('${n}')">✕</span></span>`).join('');}
 function editSelectPrint(v){editPrint=v;document.querySelectorAll('[id^="ept-"]').forEach(b=>b.classList.remove('active-screen','active-dtf','active-none'));document.getElementById(v==='screen'?'ept-screen':v==='dtf'?'ept-dtf':'ept-none').classList.add(v==='screen'?'active-screen':v==='dtf'?'active-dtf':'active-none');previewChanges();}
 function editSelectSale(v){editSaleBy=v;document.querySelectorAll('[id^="esb-"]').forEach(b=>b.classList.remove('active'));const m={"Sridevi":"esb-sridevi","Anu Prasad":"esb-anuprasad","Esha":"esb-esha","Other":"esb-other"};if(m[v])document.getElementById(m[v]).classList.add('active');document.getElementById('ef-sale-other').style.display=v==='Other'?'block':'none';previewChanges();}
 function editAddWorker(){const inp=document.getElementById('epi-worker');const v=inp.value.trim();if(!v||editWorkers.includes(v))return;editWorkers.push(v);inp.value='';renderEditWorkers();}
@@ -711,14 +771,7 @@ function buildCard(o){
       ${printChipHTML(o.print)}
       ${o.edited?'<span class="card-edited-badge">✏️ Edited</span>':''}
     </div>
-    ${(o.primaryMaterial||o.dimensions||o.color)?`<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">
-      ${o.primaryMaterial?`<span style="font-size:10px;background:#F0FDF4;color:#166534;border-radius:4px;padding:1px 6px;font-weight:600">🧵 ${o.primaryMaterial}</span>`:''}
-      ${o.secondaryMaterial?`<span style="font-size:10px;background:#F0FDF4;color:#166534;border-radius:4px;padding:1px 6px">+ ${o.secondaryMaterial}</span>`:''}
-      ${o.dimensions?`<span style="font-size:10px;background:#EFF6FF;color:#1D4ED8;border-radius:4px;padding:1px 6px;font-family:'DM Mono',monospace">${o.dimensions}</span>`:''}
-      ${o.color?`<span style="font-size:10px;background:#FDF4FF;color:#7E22CE;border-radius:4px;padding:1px 6px">🎨 ${o.color}</span>`:''}
-    </div>`:''}
-    ${o.features?`<div style="margin-top:3px;font-size:10px;color:rgba(44,31,20,0.5)">✦ ${o.features}</div>`:''}
-    ${o.cuttingDate?`<div style="margin-top:4px;font-size:10px;color:rgba(44,31,20,0.5);font-family:'DM Mono',monospace">✂️ Cutting: ${o.cuttingDate}</div>`:''}
+    ${o.cuttingDate?`<div style="margin-top:5px;font-size:10px;color:rgba(44,31,20,0.5);font-family:'DM Mono',monospace">✂️ Cutting: ${o.cuttingDate}</div>`:''}
     ${hasPeople?`<div class="people-chips">${o.saleBy?`<span class="avatar-chip sale">🏷 ${o.saleBy}</span>`:''}${(o.workers||[]).map(n=>`<span class="avatar-chip worker">🔧 ${n}</span>`).join('')}</div>`:''}
     ${tlHTML}
     <div class="card-actions">
@@ -833,16 +886,6 @@ function openDetail(id,e){
   document.getElementById('m-qty').textContent=`${o.qty||'—'} pcs`;
   document.getElementById('m-entry-date').textContent=o.entryDate||'—';
   document.getElementById('m-cutting-date').textContent=o.cuttingDate||'Not started yet';
-  // Bag specs
-  const matRow=document.getElementById('m-material-row');
-  const matVal=document.getElementById('m-material');
-  if(o.primaryMaterial){matRow.style.display='flex';matVal.textContent=o.secondaryMaterial?`${o.primaryMaterial} + ${o.secondaryMaterial}`:o.primaryMaterial;}else matRow.style.display='none';
-  const dimRow=document.getElementById('m-dimensions-row');
-  if(o.dimensions){dimRow.style.display='flex';document.getElementById('m-dimensions').textContent=o.dimensions;}else dimRow.style.display='none';
-  const colRow=document.getElementById('m-color-row');
-  if(o.color){colRow.style.display='flex';document.getElementById('m-color').textContent=o.color;}else colRow.style.display='none';
-  const featRow=document.getElementById('m-features-row');
-  if(o.features){featRow.style.display='flex';document.getElementById('m-features').textContent=o.features;}else featRow.style.display='none';
   document.getElementById('m-date').textContent=isValidISO(o.date)?fmtDate(o.date):(o.date||'TBD');
   document.getElementById('m-time').textContent=(o.time&&!/T\d{2}:\d{2}/.test(o.time)&&o.time!=='—')?o.time:'—';
   document.getElementById('m-print').textContent=o.print==='screen'?'🖨 Screen Print':o.print==='dtf'?'🎨 DTF':'None';
@@ -986,6 +1029,29 @@ async function saveEdit(){
   await sheetPost({action:'addTimeline',orderId:o.id,client:o.client,...tlEntry,changes:JSON.stringify(changes)});
 }
 
+function openAddModal(){
+  selectedPrint='none';selectPrint('none');selectedSaleBy='';
+  document.querySelectorAll('#add-modal .sale-by-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('f-sale-other').style.display='none';
+  document.getElementById('f-entry-date').value='';
+  formWorkers=[];renderFormWorkers();
+  document.getElementById('add-modal').classList.add('open');
+}
+async function addOrder(){
+  const client=document.getElementById('f-client').value.trim();if(!client){showToast('⚠️ Client name required');return;}
+  const saleBy=selectedSaleBy==='Other'?(document.getElementById('f-sale-other').value.trim()||'Other'):selectedSaleBy;
+  const stg=document.getElementById('f-stage').value;
+  const manualEntry=document.getElementById('f-entry-date').value;
+  const entryDate=manualEntry?fmtDate(manualEntry)+' (entered manually)':nowLabel();
+  const newOrder={id:nextId++,client,product:document.getElementById('f-product').value||'—',qty:parseInt(document.getElementById('f-qty').value)||0,date:document.getElementById('f-date').value||'',time:document.getElementById('f-notes').value||'—',stage:stg,status:document.getElementById('f-priority').value,print:selectedPrint,saleBy,workers:[...formWorkers],remarks:'',edited:false,entryDate,cuttingDate:'',timeline:[{type:'stage',stage:stg,date:entryDate,back:false,note:'Order created'}]};
+  orders.unshift(newOrder);
+  closeModal('add-modal');showToast('✓ Order added — saving to Sheets…');render();renderDayPanel();
+  ['f-client','f-product','f-qty','f-date','f-notes','f-entry-date'].forEach(id=>document.getElementById(id).value='');
+  formWorkers=[];selectPrint('none');selectedSaleBy='';
+  document.querySelectorAll('#add-modal .sale-by-btn').forEach(b=>b.classList.remove('active'));
+  await sheetPost({action:'addOrder',...newOrder,workers:newOrder.workers,entryDate:newOrder.entryDate,cuttingDate:''});
+  await sheetPost({action:'addTimeline',orderId:newOrder.id,client:newOrder.client,stage:stg,timestamp:entryDate,type:'stage',back:false,note:'Order created',changes:''});
+}
 
 function closeModal(id){
   document.getElementById(id).classList.remove('open');
