@@ -736,8 +736,8 @@ function buildCard(o){
       ${o.edited?'<span class="card-edited-badge">✏️ Edited</span>':''}
     </div>
     ${(o.primaryMaterial||o.dimensions||o.color)?`<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">
-      ${o.primaryMaterial?`<span style="font-size:10px;background:#F0FDF4;color:#166534;border-radius:4px;padding:1px 6px;font-weight:600">🧵 ${o.primaryMaterial}</span>`:''}
-      ${o.secondaryMaterial?`<span style="font-size:10px;background:#F0FDF4;color:#166534;border-radius:4px;padding:1px 6px">+ ${o.secondaryMaterial}</span>`:''}
+      ${o.primaryMaterial?`<span style="font-size:10px;background:#F0FDF4;color:#166534;border-radius:4px;padding:1px 6px;font-weight:600">🧵 ${o.primaryMaterial}${o.primaryVariation?' — '+o.primaryVariation:''}${o.primaryGSM?' ('+o.primaryGSM+' GSM)':''}</span>`:''}
+      ${o.secondaryMaterial?`<span style="font-size:10px;background:#F0FDF4;color:#166534;border-radius:4px;padding:1px 6px">+ ${o.secondaryMaterial}${o.secondaryVariation?' — '+o.secondaryVariation:''}${o.secondaryGSM?' ('+o.secondaryGSM+' GSM)':''}</span>`:''}
       ${o.dimensions?`<span style="font-size:10px;background:#EFF6FF;color:#1D4ED8;border-radius:4px;padding:1px 6px;font-family:'DM Mono',monospace">${o.dimensions}</span>`:''}
       ${o.color?`<span style="font-size:10px;background:#FDF4FF;color:#7E22CE;border-radius:4px;padding:1px 6px">🎨 ${o.color}</span>`:''}
     </div>`:''}
