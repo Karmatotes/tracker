@@ -407,12 +407,7 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
         <div class="print-type-btn" id="ept-dtf" onclick="editSelectPrint('dtf')">🎨 DTF</div>
       </div>
       <div class="edit-section-label">🏷 Sale By</div>
-      <div class="sale-by-grid" style="margin-bottom:8px">
-        <div class="sale-by-btn" id="esb-sridevi"   onclick="editSelectSale('Sridevi')">Sridevi</div>
-        <div class="sale-by-btn" id="esb-anuprasad" onclick="editSelectSale('Anu Prasad')">Anu Prasad</div>
-        <div class="sale-by-btn" id="esb-esha"      onclick="editSelectSale('Esha')">Esha</div>
-        <div class="sale-by-btn" id="esb-other"     onclick="editSelectSale('Other')">Other…</div>
-      </div>
+      <div class="sale-by-grid" id="esb-grid" style="margin-bottom:8px"></div>
       <input class="form-control" id="ef-sale-other" placeholder="Enter name…" style="display:none;margin-bottom:14px" oninput="previewChanges()">
       <div class="edit-section-label">🔧 Workers</div>
       <div class="people-builder" style="margin-bottom:14px">
@@ -475,15 +470,18 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 
 <script>
 const SHEET_URL="https://script.google.com/macros/s/AKfycbxpcfocezAqlwg37_SujPuDilIyXEeve5A8Niir1vohU3pz2sytBrSIjQyX6vLmoIPN/exec";
+const CONFIG_URL="https://script.google.com/macros/s/AKfycbxRr3o5M_bYR3V9oZf2qMH0-Hrp13qP_PcA7h-1KddIPx6TzfMzY6KoYnTMxaa8mnSa/exec";
 const STAGES=["Cutting","Printing","Stitching","Finishing","Packing & Del","Done"];
 const STAGE_COLORS={"Cutting":{bg:"#FEF3C7",text:"#92400E",dot:"#F59E0B"},"Printing":{bg:"#DBEAFE",text:"#1E40AF",dot:"#3B82F6"},"Stitching":{bg:"#FDE8D8",text:"#9A3412",dot:"#EA580C"},"Finishing":{bg:"#FAE8FF",text:"#6B21A8",dot:"#A855F7"},"Packing & Del":{bg:"#DCFCE7",text:"#166534",dot:"#22C55E"},"Done":{bg:"#F3F4F6",text:"#374151",dot:"#9CA3AF"}};
 const STATUS_DOT={delayed:"#C0392B",urgent:"#D4A96A",ok:"#3B6B45"};
 const COL_CLASS={"Cutting":"col-cutting","Printing":"col-printing","Stitching":"col-stitching","Finishing":"col-finishing","Packing & Del":"col-packing","Done":"col-done"};
 
+let configData=null;
 let orders=[],nextId=1,activeFilter='all',searchTerm='',currentOrderId=null;
 let customDateFilter='';
 let editPrint='none',editSaleBy='',editWorkers=[];
 let undoStack=[],redoStack=[],pendingBackId=null;
+let allSalesReps=['Sridevi','Anu Prasad','Esha'];
 
 // ── SMART STAGE FLOW ──────────────────────────────────────────
 function getNextStage(currentStage,print){
@@ -507,14 +505,11 @@ function nowLabel(){const n=new Date();return n.toLocaleDateString('en-IN',{day:
 // FIX: handle Google Sheets returning Date objects or ISO strings
 function cleanSheetValue(val){
   if(!val&&val!==0)return'';
-  // If it's a Date object or ISO timestamp string from Sheets
   if(val instanceof Date)return val.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
   const s=String(val);
-  // Detect ISO datetime string e.g. "2026-04-21T08:42:48.000Z"
   if(/^\d{4}-\d{2}-\d{2}T/.test(s)){
     const d=new Date(s);
     if(!isNaN(d.getTime())){
-      // If it looks like a time-only value (year 1899 = Excel epoch time)
       if(d.getFullYear()<1900)return'';
       return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
     }
@@ -522,7 +517,6 @@ function cleanSheetValue(val){
   return s;
 }
 
-// FIX: clean date-only ISO "2026-04-21" → keep as-is for date inputs
 function cleanDateForInput(val){
   if(!val)return'';
   const s=String(val);
@@ -590,6 +584,17 @@ async function refreshData(){
 }
 
 async function initApp(){
+  // Load config
+  const cfgData=await fetch(`${CONFIG_URL}?action=getConfig`).then(r=>r.json()).catch(err=>{console.error('Config load failed',err);return null;});
+  if(cfgData){
+    configData=cfgData;
+    // APPEND config sales reps
+    if(configData.people){
+      const cfgSalesReps=configData.people.filter(p=>p.type==='sales').map(p=>p.name);
+      allSalesReps=[...new Set([...allSalesReps,...cfgSalesReps])];
+    }
+  }
+
   const data=await sheetCall({action:'getAll'});
   document.getElementById('loading-overlay').classList.add('hidden');
   if(data&&data.orders&&data.orders.length>0){
@@ -655,10 +660,17 @@ function syncUR(){document.getElementById('btn-undo').disabled=!undoStack.length
 document.getElementById('live-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 
 function editSelectPrint(v){editPrint=v;document.querySelectorAll('[id^="ept-"]').forEach(b=>b.classList.remove('active-screen','active-dtf','active-none'));document.getElementById(v==='screen'?'ept-screen':v==='dtf'?'ept-dtf':'ept-none').classList.add(v==='screen'?'active-screen':v==='dtf'?'active-dtf':'active-none');previewChanges();}
-function editSelectSale(v){editSaleBy=v;document.querySelectorAll('[id^="esb-"]').forEach(b=>b.classList.remove('active'));const m={"Sridevi":"esb-sridevi","Anu Prasad":"esb-anuprasad","Esha":"esb-esha","Other":"esb-other"};if(m[v])document.getElementById(m[v]).classList.add('active');document.getElementById('ef-sale-other').style.display=v==='Other'?'block':'none';previewChanges();}
+function editSelectSale(v){editSaleBy=v;document.querySelectorAll('.sale-by-btn').forEach(b=>b.classList.remove('active'));const m={};allSalesReps.forEach((n,i)=>{if(n==='Other')m['Other']='esb-other';});const btns=document.querySelectorAll('.sale-by-btn');btns.forEach(b=>{const tx=b.textContent.trim();if(tx===v)b.classList.add('active');});document.getElementById('ef-sale-other').style.display=v==='Other'?'block':'none';previewChanges();}
 function editAddWorker(){const inp=document.getElementById('epi-worker');const v=inp.value.trim();if(!v||editWorkers.includes(v))return;editWorkers.push(v);inp.value='';renderEditWorkers();}
 function removeEditWorker(n){editWorkers=editWorkers.filter(x=>x!==n);renderEditWorkers();}
 function renderEditWorkers(){document.getElementById('ept-workers').innerHTML=editWorkers.map(n=>`<span class="ptag worker">${n}<span class="ptag-x" onclick="removeEditWorker('${n}')">✕</span></span>`).join('');previewChanges();}
+function renderSaleByGrid(){
+  const grid=document.getElementById('esb-grid');grid.innerHTML='';
+  allSalesReps.forEach(rep=>{
+    const btn=document.createElement('div');btn.className='sale-by-btn';btn.textContent=rep;
+    btn.onclick=()=>editSelectSale(rep);grid.appendChild(btn);
+  });
+}
 
 function onSearch(v){searchTerm=v.toLowerCase();document.getElementById('search-input').classList.toggle('has-value',v.length>0);document.getElementById('btn-clear-search').classList.toggle('visible',v.length>0);updateFilterBar();render();}
 function clearSearch(){document.getElementById('search-input').value='';onSearch('');}
@@ -796,7 +808,6 @@ async function quickAdvance(id,e){
   const next=getNextStage(o.stage,o.print);if(!next)return;
   pushUndo(prev);
   o.stage=next;
-  // Auto-capture cutting date when entering Cutting stage
   if(next==='Cutting'&&!o.cuttingDate)o.cuttingDate=nowLabel();
   const tlEntry={type:"stage",stage:o.stage,date:nowLabel(),back:false,note:''};
   o.timeline.push(tlEntry);if(o.stage==='Done')o.status='ok';
@@ -857,7 +868,6 @@ function openDetail(id,e){
   document.getElementById('m-qty').textContent=`${o.qty||'—'} pcs`;
   document.getElementById('m-entry-date').textContent=o.entryDate||'—';
   document.getElementById('m-cutting-date').textContent=o.cuttingDate||'Not started yet';
-  // Bag specs
   const matRow=document.getElementById('m-material-row');
   const matVal=document.getElementById('m-material');
   if(o.primaryMaterial){matRow.style.display='flex';matVal.textContent=o.secondaryMaterial?`${o.primaryMaterial} + ${o.secondaryMaterial}`:o.primaryMaterial;}else matRow.style.display='none';
@@ -912,33 +922,26 @@ function openEditModal(){
   document.getElementById('ef-client').value=o.client;
   document.getElementById('ef-product').value=o.product;
   document.getElementById('ef-qty').value=o.qty||'';
-  // FIX: cleanDateForInput handles ISO timestamps from Sheets
   document.getElementById('ef-date').value=cleanDateForInput(o.date)||'';
-  // FIX: time field — strip timestamp artifacts, only show plain text
   const cleanTime=(o.time&&o.time!=='—'&&!/T\d{2}:\d{2}/.test(o.time))?o.time:'';
   document.getElementById('ef-notes').value=cleanTime;
   document.getElementById('ef-priority').value=o.status;
   document.getElementById('ef-reason').value='';
   document.getElementById('edit-change-log').classList.remove('visible');
   document.getElementById('edit-change-list').innerHTML='';
-  // Entry date
   const entryISO=parseEntryDateToISO((o.entryDate||'').split(',')[0].trim());
   document.getElementById('ef-entry-date').value=entryISO||'';
-  // Cutting date
   const cuttingISO=parseEntryDateToISO((o.cuttingDate||'').split(',')[0].trim());
   document.getElementById('ef-cutting-date').value=cuttingISO||'';
-  // Print
   editPrint=o.print||'none';
   document.querySelectorAll('[id^="ept-"]').forEach(b=>b.classList.remove('active-screen','active-dtf','active-none'));
   document.getElementById(editPrint==='screen'?'ept-screen':editPrint==='dtf'?'ept-dtf':'ept-none').classList.add(editPrint==='screen'?'active-screen':editPrint==='dtf'?'active-dtf':'active-none');
   // Sale by
-  const knownSales=["Sridevi","Anu Prasad","Esha"];
-  const saleMap={"Sridevi":"esb-sridevi","Anu Prasad":"esb-anuprasad","Esha":"esb-esha"};
-  document.querySelectorAll('[id^="esb-"]').forEach(b=>b.classList.remove('active'));
-  document.getElementById('ef-sale-other').style.display='none';document.getElementById('ef-sale-other').value='';
-  if(o.saleBy&&knownSales.includes(o.saleBy)){editSaleBy=o.saleBy;document.getElementById(saleMap[o.saleBy]).classList.add('active');}
-  else if(o.saleBy){editSaleBy='Other';document.getElementById('esb-other').classList.add('active');document.getElementById('ef-sale-other').style.display='block';document.getElementById('ef-sale-other').value=o.saleBy;}
-  else editSaleBy='';
+  editSaleBy=o.saleBy||'';
+  renderSaleByGrid();
+  if(o.saleBy&&allSalesReps.includes(o.saleBy)){editSelectSale(o.saleBy);}
+  else if(o.saleBy){editSelectSale('Other');document.getElementById('ef-sale-other').value=o.saleBy;}
+  document.getElementById('ef-sale-other').style.display=editSaleBy==='Other'?'block':'none';
   editWorkers=[...(o.workers||[])];renderEditWorkers();
   document.getElementById('edit-modal').classList.add('open');
 }
