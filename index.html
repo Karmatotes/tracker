@@ -342,6 +342,7 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
       <div class="modal-row" id="m-material-row" style="display:none"><label>Material</label><div class="val" id="m-material">—</div></div>
       <div class="modal-row" id="m-dimensions-row" style="display:none"><label>Dimensions</label><div class="val" id="m-dimensions">—</div></div>
       <div class="modal-row" id="m-color-row" style="display:none"><label>Color</label><div class="val" id="m-color">—</div></div>
+      <div class="modal-row" id="m-pattern-row" style="display:none"><label>Pattern</label><div class="val" id="m-pattern">—</div></div>
       <div class="modal-row" id="m-features-row" style="display:none"><label>Features</label><div class="val" id="m-features">—</div></div>
       <div class="modal-row"><label>Delivery</label><div class="val" id="m-date">—</div></div>
       <div class="modal-row"><label>Time</label><div class="val" id="m-time">—</div></div>
@@ -618,6 +619,7 @@ async function initApp(){
       secondaryMaterial:String(row['Secondary Material']||''),
       dimensions:String(row['Dimensions']||''),
       color:String(row['Color']||''),
+      pattern:String(row['Pattern']||''),
       features:String(row['Features']||''),
       orderValue:Number(row['Order Value'])||0,
       timeline:[]
@@ -751,7 +753,7 @@ function buildCard(o){
       ${o.primaryMaterial?`<span style="font-size:10px;background:#F0FDF4;color:#166534;border-radius:4px;padding:1px 6px;font-weight:600">🧵 ${o.primaryMaterial}${o.primaryVariation?' — '+o.primaryVariation:''}${o.primaryGSM?' ('+o.primaryGSM+' GSM)':''}</span>`:''}
       ${o.secondaryMaterial?`<span style="font-size:10px;background:#F0FDF4;color:#166534;border-radius:4px;padding:1px 6px">+ ${o.secondaryMaterial}${o.secondaryVariation?' — '+o.secondaryVariation:''}${o.secondaryGSM?' ('+o.secondaryGSM+' GSM)':''}</span>`:''}
       ${o.dimensions?`<span style="font-size:10px;background:#EFF6FF;color:#1D4ED8;border-radius:4px;padding:1px 6px;font-family:'DM Mono',monospace">${o.dimensions}</span>`:''}
-      ${o.color?`<span style="font-size:10px;background:#FDF4FF;color:#7E22CE;border-radius:4px;padding:1px 6px">🎨 ${o.color}</span>`:''}
+      ${o.color?`<span style="font-size:10px;background:#FDF4FF;color:#7E22CE;border-radius:4px;padding:1px 6px">🎨 ${o.color}</span>`:''}\n      ${o.pattern?`<span style="font-size:10px;background:#FDF4FF;color:#7E22CE;border-radius:4px;padding:2px 6px;font-weight:600">✨ ${o.pattern}</span>`:''}
     </div>`:''}
     ${o.features?`<div style="margin-top:3px;font-size:10px;color:rgba(44,31,20,0.5)">✦ ${o.features}</div>`:''}
     ${o.cuttingDate?`<div style="margin-top:4px;font-size:10px;color:rgba(44,31,20,0.5);font-family:'DM Mono',monospace">✂️ Cutting: ${o.cuttingDate}</div>`:''}
@@ -875,6 +877,8 @@ function openDetail(id,e){
   if(o.dimensions){dimRow.style.display='flex';document.getElementById('m-dimensions').textContent=o.dimensions;}else dimRow.style.display='none';
   const colRow=document.getElementById('m-color-row');
   if(o.color){colRow.style.display='flex';document.getElementById('m-color').textContent=o.color;}else colRow.style.display='none';
+  const patRow=document.getElementById('m-pattern-row');
+  if(o.pattern){patRow.style.display='flex';document.getElementById('m-pattern').textContent=o.pattern;}else patRow.style.display='none';
   const featRow=document.getElementById('m-features-row');
   if(o.features){featRow.style.display='flex';document.getElementById('m-features').textContent=o.features;}else featRow.style.display='none';
   document.getElementById('m-date').textContent=isValidISO(o.date)?fmtDate(o.date):(o.date||'TBD');
