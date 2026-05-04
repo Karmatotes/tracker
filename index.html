@@ -734,6 +734,7 @@ function buildCard(o){
   const tlHTML=tl.length?`<div class="card-timeline"><div class="card-timeline-title">📅 History</div>${tlShow.map(t=>{const sc=STAGE_COLORS[t.stage]||{dot:'#9CA3AF'};const isEdit=t.type==='edit';const isDel=t.type==='deleted';return`<div class="tl-entry"><span class="tl-dot" style="background:${isDel?'#C0392B':isEdit?'#E65100':t.back?'#C0392B':sc.dot}"></span><span>${isDel?'🗑 Deleted':isEdit?'✏️ Edited':(`<strong>${t.stage}</strong>${t.back?' ↩':''}`)} — ${t.date}</span></div>`;}).join('')}${tl.length>3?`<div style="font-size:10px;color:rgba(44,31,20,0.35);margin-top:2px">+${tl.length-3} more — open detail</div>`:''}</div>`:'';
   const hasPeople=o.saleBy||(o.workers&&o.workers.length);
   div.innerHTML=`
+    <div style="background:#1F2937;color:#fff;padding:3px 8px;border-radius:6px 6px 0 0;font-size:10px;font-family:'DM Mono',monospace;font-weight:600;display:flex;justify-content:space-between;align-items:center;margin:-11px -12px 8px -12px"><span>ID: ${o.id}</span><span style="opacity:0.5">${o.stage}</span></div>
     <div class="card-top"><div><div class="card-client">${o.client}</div><div class="card-product">${o.product}</div></div><span class="card-badge ${bm[o.status]||'badge-ok'}">${bt[o.status]||'OK'}</span></div>
     <div class="card-meta">
       <span class="meta-chip qty">📦 ${o.qty||'—'} pcs</span>
@@ -803,8 +804,15 @@ function updateKPIs(){
 // ══════════════════════════════════════════════
 async function quickAdvance(id,e){
   if(e)e.stopPropagation();
-  const prev=snapshot();const o=orders.find(x=>x.id===id);if(!o)return;
+  console.log("🔵 quickAdvance called with ID:", id, "(type:", typeof id, ")");
+  const prev=snapshot();const o=orders.find(x=>x.id===id);
+  if(!o){
+    console.error("❌ Order not found for ID:", id);
+    return;
+  }
+  console.log("✅ Found order:", o.client, "- Current stage:", o.stage);
   const next=getNextStage(o.stage,o.print);if(!next)return;
+  console.log("➡️ Moving to:", next);
   pushUndo(prev);
   o.stage=next;
   if(next==='Cutting'&&!o.cuttingDate)o.cuttingDate=nowLabel();
@@ -813,8 +821,11 @@ async function quickAdvance(id,e){
   render();renderDayPanel();
 
   // FIX: Always send id explicitly, check result before adding timeline
+  console.log("📤 Sending to Google Sheets - ID:", o.id, "Client:", o.client, "New stage:", o.stage);
   const updateRes=await sheetPost({action:'updateOrder',id:o.id,...o,workers:o.workers});
+  console.log("📥 Response from Google Sheets:", updateRes);
   if(!updateRes||updateRes.error){
+    console.error("❌ Save failed:", updateRes?.error);
     showToast('❌ Failed to save stage. Try again.');
     orders=undoStack.pop();if(prev)undoStack.push(prev);redoStack=[];syncUR();
     render();renderDayPanel();
