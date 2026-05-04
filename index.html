@@ -29,7 +29,6 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 .logo span{font-size:12px;color:rgba(255,255,255,0.5);font-weight:400}
 .header-right{display:flex;align-items:center;gap:10px}
 .date-badge{background:rgba(255,255,255,0.1);border-radius:6px;padding:4px 10px;font-size:12px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.75)}
-
 .btn-refresh{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:7px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:5px;transition:all .2s}
 .btn-refresh:hover{background:rgba(255,255,255,0.25)}
 .btn-refresh.spinning span{display:inline-block;animation:spin .6s linear infinite}
@@ -72,7 +71,6 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
 #loading-overlay{position:fixed;inset:0;background:rgba(44,31,20,0.75);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
 #loading-overlay.hidden{display:none}
 .loading-spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{color:#fff;font-size:15px;font-weight:600}
 .loading-sub{color:rgba(255,255,255,0.6);font-size:12px}
 #day-panel{display:none;margin:0 24px 14px;background:var(--surface);border:1.5px solid var(--sand);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
@@ -466,7 +464,6 @@ header{background:var(--bark);color:#fff;padding:0 24px;height:60px;display:flex
   </div>
 </div>
 
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -484,7 +481,6 @@ let editPrint='none',editSaleBy='',editWorkers=[];
 let undoStack=[],redoStack=[],pendingBackId=null;
 let allSalesReps=['Sridevi','Anu Prasad','Esha'];
 
-// ── SMART STAGE FLOW ──────────────────────────────────────────
 function getNextStage(currentStage,print){
   const idx=STAGES.indexOf(currentStage);
   if(idx<0||idx>=STAGES.length-1)return null;
@@ -503,7 +499,6 @@ function getPrevStage(currentStage,print){
 function todayISO(){return new Date().toISOString().split('T')[0]}
 function nowLabel(){const n=new Date();return n.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+', '+n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});}
 
-// FIX: handle Google Sheets returning Date objects or ISO strings
 function cleanSheetValue(val){
   if(!val&&val!==0)return'';
   if(val instanceof Date)return val.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
@@ -585,11 +580,9 @@ async function refreshData(){
 }
 
 async function initApp(){
-  // Load config
   const cfgData=await fetch(`${CONFIG_URL}?action=getConfig`).then(r=>r.json()).catch(err=>{console.error('Config load failed',err);return null;});
   if(cfgData){
     configData=cfgData;
-    // APPEND config sales reps
     if(configData.people){
       const cfgSalesReps=configData.people.filter(p=>p.type==='sales').map(p=>p.name);
       allSalesReps=[...new Set([...allSalesReps,...cfgSalesReps])];
@@ -662,7 +655,7 @@ function syncUR(){document.getElementById('btn-undo').disabled=!undoStack.length
 document.getElementById('live-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 
 function editSelectPrint(v){editPrint=v;document.querySelectorAll('[id^="ept-"]').forEach(b=>b.classList.remove('active-screen','active-dtf','active-none'));document.getElementById(v==='screen'?'ept-screen':v==='dtf'?'ept-dtf':'ept-none').classList.add(v==='screen'?'active-screen':v==='dtf'?'active-dtf':'active-none');previewChanges();}
-function editSelectSale(v){editSaleBy=v;document.querySelectorAll('.sale-by-btn').forEach(b=>b.classList.remove('active'));const m={};allSalesReps.forEach((n,i)=>{if(n==='Other')m['Other']='esb-other';});const btns=document.querySelectorAll('.sale-by-btn');btns.forEach(b=>{const tx=b.textContent.trim();if(tx===v)b.classList.add('active');});document.getElementById('ef-sale-other').style.display=v==='Other'?'block':'none';previewChanges();}
+function editSelectSale(v){editSaleBy=v;document.querySelectorAll('.sale-by-btn').forEach(b=>b.classList.remove('active'));const btns=document.querySelectorAll('.sale-by-btn');btns.forEach(b=>{const tx=b.textContent.trim();if(tx===v)b.classList.add('active');});document.getElementById('ef-sale-other').style.display=v==='Other'?'block':'none';previewChanges();}
 function editAddWorker(){const inp=document.getElementById('epi-worker');const v=inp.value.trim();if(!v||editWorkers.includes(v))return;editWorkers.push(v);inp.value='';renderEditWorkers();}
 function removeEditWorker(n){editWorkers=editWorkers.filter(x=>x!==n);renderEditWorkers();}
 function renderEditWorkers(){document.getElementById('ept-workers').innerHTML=editWorkers.map(n=>`<span class="ptag worker">${n}<span class="ptag-x" onclick="removeEditWorker('${n}')">✕</span></span>`).join('');previewChanges();}
@@ -804,6 +797,10 @@ function updateKPIs(){
   document.getElementById('kpi-delivery').textContent=orders.filter(o=>isValidISO(o.date)&&o.date>=td&&o.date<=weISO).length;
 }
 
+// ══════════════════════════════════════════════
+// FIXED: quickAdvance — adds id:o.id, checks for
+// save success before adding timeline entry
+// ══════════════════════════════════════════════
 async function quickAdvance(id,e){
   if(e)e.stopPropagation();
   const prev=snapshot();const o=orders.find(x=>x.id===id);if(!o)return;
@@ -813,9 +810,22 @@ async function quickAdvance(id,e){
   if(next==='Cutting'&&!o.cuttingDate)o.cuttingDate=nowLabel();
   const tlEntry={type:"stage",stage:o.stage,date:nowLabel(),back:false,note:''};
   o.timeline.push(tlEntry);if(o.stage==='Done')o.status='ok';
-  render();renderDayPanel();showToast(`✓ "${o.client}" → ${o.stage}`);
-  await sheetPost({action:'updateOrder',...o,workers:o.workers});
-  await sheetPost({action:'addTimeline',orderId:o.id,client:o.client,...tlEntry});
+  render();renderDayPanel();
+
+  // FIX: Always send id explicitly, check result before adding timeline
+  const updateRes=await sheetPost({action:'updateOrder',id:o.id,...o,workers:o.workers});
+  if(!updateRes||updateRes.error){
+    showToast('❌ Failed to save stage. Try again.');
+    orders=undoStack.pop();if(prev)undoStack.push(prev);redoStack=[];syncUR();
+    render();renderDayPanel();
+    return;
+  }
+  const tlRes=await sheetPost({action:'addTimeline',orderId:o.id,client:o.client,...tlEntry});
+  if(!tlRes||tlRes.error){
+    showToast(`⚠️ Stage saved but timeline failed`);
+  }else{
+    showToast(`✓ "${o.client}" → ${o.stage}`);
+  }
 }
 
 function quickBack(id,e){
@@ -830,6 +840,10 @@ function quickBack(id,e){
   document.getElementById('back-modal').classList.add('open');
 }
 function openBackModal(){const o=orders.find(x=>x.id===currentOrderId);if(o)quickBack(o.id,null);}
+
+// ══════════════════════════════════════════════
+// FIXED: executeBack — adds id:o.id, checks save
+// ══════════════════════════════════════════════
 async function executeBack(){
   const reason=document.getElementById('back-reason-input').value.trim();
   if(!reason){document.getElementById('back-reason-err').style.display='block';return;}
@@ -839,10 +853,24 @@ async function executeBack(){
   const tlEntry={type:"stage",stage:o.stage,date:nowLabel(),back:true,note:reason};
   o.timeline.push(tlEntry);
   closeModal('back-modal');
+
+  // FIX: Always send id explicitly, check result before adding timeline
+  const updateRes=await sheetPost({action:'updateOrder',id:o.id,...o,workers:o.workers});
+  if(!updateRes||updateRes.error){
+    showToast('❌ Failed to move back. Try again.');
+    orders=undoStack.pop();if(prev)undoStack.push(prev);redoStack=[];syncUR();
+    render();renderDayPanel();
+    return;
+  }
+  const tlRes=await sheetPost({action:'addTimeline',orderId:o.id,client:o.client,...tlEntry});
+  if(!tlRes||tlRes.error){
+    showToast(`⚠️ Stage moved but timeline failed`);
+  }else{
+    showToast(`↩ "${o.client}" moved back to ${o.stage}`);
+  }
+
   if(document.getElementById('detail-modal').classList.contains('open'))openDetail(o.id,null);
-  showToast(`↩ "${o.client}" moved back to ${o.stage}`);render();renderDayPanel();
-  await sheetPost({action:'updateOrder',...o,workers:o.workers});
-  await sheetPost({action:'addTimeline',orderId:o.id,client:o.client,...tlEntry});
+  render();renderDayPanel();
 }
 
 function quickRemove(id,e){
@@ -940,7 +968,6 @@ function openEditModal(){
   editPrint=o.print||'none';
   document.querySelectorAll('[id^="ept-"]').forEach(b=>b.classList.remove('active-screen','active-dtf','active-none'));
   document.getElementById(editPrint==='screen'?'ept-screen':editPrint==='dtf'?'ept-dtf':'ept-none').classList.add(editPrint==='screen'?'active-screen':editPrint==='dtf'?'active-dtf':'active-none');
-  // Sale by
   editSaleBy=o.saleBy||'';
   renderSaleByGrid();
   if(o.saleBy&&allSalesReps.includes(o.saleBy)){editSelectSale(o.saleBy);}
@@ -974,6 +1001,9 @@ function previewChanges(){
   else{log.classList.remove('visible');list.innerHTML='';}
 }
 
+// ══════════════════════════════════════════════
+// FIXED: saveEdit — adds id:o.id, checks save
+// ══════════════════════════════════════════════
 async function saveEdit(){
   const o=orders.find(x=>x.id===currentOrderId);if(!o)return;
   const reason=document.getElementById('ef-reason').value.trim();
@@ -1011,12 +1041,25 @@ async function saveEdit(){
   const tlEntry={type:'edit',stage:o.stage,date:nowLabel(),back:false,note:reason,changes};
   o.timeline.push(tlEntry);
   closeModal('edit-modal');
-  if(document.getElementById('detail-modal').classList.contains('open'))openDetail(o.id,null);
-  showToast(`✏️ "${o.client}" updated`);render();renderDayPanel();
-  await sheetPost({action:'updateOrder',...o,workers:o.workers,edited:true,entryDate:o.entryDate,cuttingDate:o.cuttingDate});
-  await sheetPost({action:'addTimeline',orderId:o.id,client:o.client,...tlEntry,changes:JSON.stringify(changes)});
-}
+  render();renderDayPanel();
 
+  // FIX: Always send id explicitly, check result before adding timeline
+  const updateRes=await sheetPost({action:'updateOrder',id:o.id,...o,workers:o.workers,edited:true,entryDate:o.entryDate,cuttingDate:o.cuttingDate});
+  if(!updateRes||updateRes.error){
+    showToast('❌ Failed to save edit. Try again.');
+    orders=undoStack.pop();if(prev)undoStack.push(prev);redoStack=[];syncUR();
+    render();renderDayPanel();
+    return;
+  }
+  const tlRes=await sheetPost({action:'addTimeline',orderId:o.id,client:o.client,...tlEntry,changes:JSON.stringify(changes)});
+  if(!tlRes||tlRes.error){
+    showToast(`✏️ Saved, but timeline failed`);
+  }else{
+    showToast(`✏️ "${o.client}" updated`);
+  }
+
+  if(document.getElementById('detail-modal').classList.contains('open'))openDetail(o.id,null);
+}
 
 function closeModal(id){
   document.getElementById(id).classList.remove('open');
